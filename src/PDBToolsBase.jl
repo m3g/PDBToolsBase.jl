@@ -10,8 +10,6 @@ module PDBToolsBase
 import Dates
 import PrecompileTools
 import Printf
-import LazyArtifacts # must be loaded for lazy artifacts
-using LazyArtifacts: @artifact_str
 using LinearAlgebra: eigvecs, norm, cross, dot
 using Printf: @printf, @sprintf
 using StaticArrays: SVector, SMatrix, MMatrix
@@ -74,14 +72,10 @@ const src_dir = @__DIR__
 const SMALLPDB = joinpath(src_dir, "../test/small.pdb")
 const TESTCIF = joinpath(src_dir, "../test/small.cif")
 
-"""
-    test_file(name::AbstractString)
-
-Returns the path of the test file `name`. The test files are a lazy artifact (see
-https://github.com/m3g/MolSimTestFiles), downloaded on the first call.
-
-"""
-test_file(name::AbstractString) = joinpath(artifact"pdbtools_test_files", name)
+# test_file(name): path of the test file `name`. The test files are a lazy artifact (see
+# Artifacts.toml), downloaded on the first call. The method is defined in the TestFilesExt
+# extension, loaded with `using LazyArtifacts`.
+function test_file end
 
 # Function that returns true for all atoms: the default selection
 all(atoms) = true
