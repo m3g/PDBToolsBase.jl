@@ -10,6 +10,9 @@ PDBToolsBase.jl Changelog
 [badge-fix]: https://img.shields.io/badge/Fix-purple.svg
 [badge-info]: https://img.shields.io/badge/Info-gray.svg
 
+Version 1.0.1-DEV
+-------------
+
 Version 1.0.0
 -------------
 - ![INFO][badge-info] First version. PDBToolsBase.jl contains the core data structures and input/output functions of PDBTools.jl (from PDBTools 3.41), and the shared function names and utilities of MolSimToolkitShared.jl (from MolSimToolkitShared 1.6), which it replaces. The public API is defined in the documentation.
