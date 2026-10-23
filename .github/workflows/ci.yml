@@ -89,8 +89,8 @@ jobs:
         working-directory: test/juliac
         run: |
           # The test files are a lazy artifact: test_file downloads them
-          pdb=$(julia --project=. -e 'import PDBToolsBase; print(PDBToolsBase.test_file("structure.pdb"))')
-          cif=$(julia --project=. -e 'import PDBToolsBase; print(PDBToolsBase.test_file("1LBD.cif"))')
+          pdb=$(julia --project=. -e 'using LazyArtifacts, PDBToolsBase; print(PDBToolsBase.test_file("structure.pdb"))')
+          cif=$(julia --project=. -e 'using LazyArtifacts, PDBToolsBase; print(PDBToolsBase.test_file("1LBD.cif"))')
           ./build/bin/pdbtoolsbase_smoke "$pdb" "$RUNNER_TEMP/out_pdb"
           ./build/bin/pdbtoolsbase_smoke "$cif" "$RUNNER_TEMP/out_cif"
   docs:
