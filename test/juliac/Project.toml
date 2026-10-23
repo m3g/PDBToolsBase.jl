@@ -1,0 +1,5 @@
+[deps]
+PDBToolsBase = "c8914394-62c2-4233-bff1-d1ad7c5159d7"
+
+[sources]
+PDBToolsBase = {path = "../.."}

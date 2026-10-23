@@ -1,0 +1,9 @@
+*.swp
+*.jl.cov
+*.jl.*.cov
+*.jl.mem
+docs/build/
+Manifest.toml
+Manifest-v*.toml
+.vscode/
+test/juliac/build/

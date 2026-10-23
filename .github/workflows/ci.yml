@@ -1,0 +1,106 @@
+name: CI
+on:
+  - push
+  - pull_request
+
+# needed to allow julia-actions/cache to delete old caches that it has created
+permissions:
+  actions: write
+  contents: read
+
+env:
+  JULIA_NUM_THREADS: 2
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+jobs:
+  test:
+    name: Julia ${{ matrix.version }} - ${{ matrix.os }} - ${{ matrix.arch }} - ${{ github.event_name }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        version:
+          - '1'
+        os:
+          - ubuntu-latest
+          - macOS-latest
+          - windows-latest
+        build_is_production_build:
+          - true
+    steps:
+      - uses: actions/checkout@v7
+      - uses: julia-actions/setup-julia@v3
+        with:
+          version: ${{ matrix.version }}
+      - uses: julia-actions/cache@v3
+      - uses: julia-actions/julia-buildpkg@latest
+      - uses: julia-actions/julia-runtest@latest
+        env:
+          BUILD_IS_PRODUCTION_BUILD: ${{ matrix.build_is_production_build }}
+        with:
+          coverage: false
+  tests-with-coverage:
+    name: Julia ${{ matrix.version }} - ${{ matrix.os }} - ${{ matrix.arch }} - ${{ github.event_name }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        version:
+          - '1'
+        os:
+          - ubuntu-latest
+        build_is_production_build:
+          - false
+    steps:
+      - uses: actions/checkout@v7
+      - uses: julia-actions/setup-julia@v3
+        with:
+          version: ${{ matrix.version }}
+      - uses: julia-actions/cache@v3
+      - uses: julia-actions/julia-buildpkg@latest
+      - uses: julia-actions/julia-runtest@latest
+        env:
+          BUILD_IS_PRODUCTION_BUILD: false
+      - uses: julia-actions/julia-processcoverage@v1
+      - uses: codecov/codecov-action@v7
+        with: 
+          file: lcov.info
+          token: ${{ secrets.CODECOV_TOKEN }}
+          fail_ci_if_error: false  # or true if you want CI to fail when Codecov fails
+  juliac:
+    # The core API must compile with `juliac --trim=safe` (see test/juliac/app.jl)
+    name: juliac --trim=safe
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: julia-actions/setup-julia@v3
+        with:
+          version: '1'
+      - uses: julia-actions/cache@v3
+      - run: julia -e 'import Pkg; Pkg.Apps.add("JuliaC")'
+      - run: echo "$HOME/.julia/bin" >> "$GITHUB_PATH"
+      - name: Build the trimmed executable
+        working-directory: test/juliac
+        run: |
+          julia --project=. -e 'import Pkg; Pkg.instantiate()'
+          JULIA_APPS_JULIA_CMD=$(which julia) juliac --output-exe pdbtoolsbase_smoke --project . --experimental --trim=safe --bundle build app.jl
+      - name: Run the trimmed executable
+        working-directory: test/juliac
+        run: |
+          ./build/bin/pdbtoolsbase_smoke ../structure.pdb "$RUNNER_TEMP/out_pdb"
+          ./build/bin/pdbtoolsbase_smoke ../1LBD.cif "$RUNNER_TEMP/out_cif"
+  docs:
+    name: Documentation
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: julia-actions/setup-julia@v3
+        with:
+          version: '1'
+      - run: |
+          julia --project=docs -e 'import Pkg; Pkg.instantiate()'
+      - run: julia --project=docs docs/make.jl
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DOCUMENTER_KEY: ${{ secrets.DOCUMENTER_KEY }}
