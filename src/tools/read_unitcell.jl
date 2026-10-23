@@ -9,7 +9,7 @@ with the `lattice_to_matrix` function. The unitcell matrix contains the lattice 
 ```julia-repl
 julia> using PDBTools
 
-julia> m = read_unitcell(PDBTools.TESTPBC)
+julia> m = read_unitcell(PDBTools.test_file("pbc.pdb"))
 3×3 StaticArraysCore.SMatrix{3, 3, Float32, 9} with indices SOneTo(3)×SOneTo(3):
  85.0   0.0   0.0
   0.0  85.0   0.0

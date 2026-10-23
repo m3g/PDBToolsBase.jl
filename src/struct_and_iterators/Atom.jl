@@ -31,7 +31,7 @@ Fields:
 ```jldoctest
 julia> using PDBTools
 
-julia> atoms = read_pdb(PDBTools.SMALLPDB)
+julia> atoms = read_pdb(PDBTools.test_file("small.pdb"))
    Structure{Atom{Nothing}} with 35 atoms
    index name resname chain   resnum  residue        x        y        z occup  beta model segname index_pdb
        1    N     ALA     A        1        1   -9.229  -14.861   -5.481  0.00  0.00     1    PROT         1
@@ -199,7 +199,7 @@ Returns the atom index as written in the PDB file (may differ from sequential in
 ```jldoctest
 julia> using PDBTools
 
-julia> atoms = read_pdb(PDBTools.SMALLPDB);
+julia> atoms = read_pdb(PDBTools.test_file("small.pdb"));
 
 julia> index_pdb(atoms[1])
 1
@@ -226,7 +226,7 @@ Returns the name of the atom.
 ```jldoctest
 julia> using PDBTools
 
-julia> atoms = read_pdb(PDBTools.SMALLPDB);
+julia> atoms = read_pdb(PDBTools.test_file("small.pdb"));
 
 julia> name(atoms[1])
 "N"
@@ -253,7 +253,7 @@ Returns the residue name of the atom.
 ```jldoctest
 julia> using PDBTools
 
-julia> atoms = read_pdb(PDBTools.SMALLPDB);
+julia> atoms = read_pdb(PDBTools.test_file("small.pdb"));
 
 julia> resname(atoms[1])
 "ALA"
@@ -280,7 +280,7 @@ Returns the chain identifier of the atom.
 ```jldoctest
 julia> using PDBTools
 
-julia> atoms = read_pdb(PDBTools.SMALLPDB);
+julia> atoms = read_pdb(PDBTools.test_file("small.pdb"));
 
 julia> chain(atoms[1])
 "A"
@@ -306,7 +306,7 @@ Returns the residue number as written in the PDB file.
 ```jldoctest
 julia> using PDBTools
 
-julia> atoms = read_pdb(PDBTools.SMALLPDB);
+julia> atoms = read_pdb(PDBTools.test_file("small.pdb"));
 
 julia> resnum(atoms[1])
 1
@@ -333,7 +333,7 @@ Returns the sequential residue (molecule) number in the structure.
 ```jldoctest
 julia> using PDBTools
 
-julia> atoms = read_pdb(PDBTools.SMALLPDB);
+julia> atoms = read_pdb(PDBTools.test_file("small.pdb"));
 
 julia> residue(atoms[1])
 1
@@ -360,7 +360,7 @@ Returns the temperature factor (B-factor) of the atom.
 ```jldoctest
 julia> using PDBTools
 
-julia> atoms = read_pdb(PDBTools.SMALLPDB);
+julia> atoms = read_pdb(PDBTools.test_file("small.pdb"));
 
 julia> beta(atoms[1])
 0.0f0
@@ -387,7 +387,7 @@ Returns the occupancy of the atom.
 ```jldoctest
 julia> using PDBTools
 
-julia> atoms = read_pdb(PDBTools.SMALLPDB);
+julia> atoms = read_pdb(PDBTools.test_file("small.pdb"));
 
 julia> occup(atoms[1])
 0.0f0
@@ -414,7 +414,7 @@ Returns the model number of the atom.
 ```jldoctest
 julia> using PDBTools
 
-julia> atoms = read_pdb(PDBTools.SMALLPDB);
+julia> atoms = read_pdb(PDBTools.test_file("small.pdb"));
 
 julia> model(atoms[1])
 1
@@ -440,7 +440,7 @@ Returns the segment name of the atom.
 ```jldoctest
 julia> using PDBTools
 
-julia> atoms = read_pdb(PDBTools.SMALLPDB);
+julia> atoms = read_pdb(PDBTools.test_file("small.pdb"));
 
 julia> segname(atoms[1])
 "PROT"
@@ -494,7 +494,7 @@ Returns the element symbol as written in the PDB file (columns 77-78).
 ```jldoctest
 julia> using PDBTools
 
-julia> atoms = read_pdb(PDBTools.SMALLPDB);
+julia> atoms = read_pdb(PDBTools.test_file("small.pdb"));
 
 julia> pdb_element(atoms[1])
 "N"
@@ -524,7 +524,7 @@ for extracting atoms from various structural elements (Atom, Residue, Chain, Mod
 ```jldoctest
 julia> using PDBTools
 
-julia> atoms = read_pdb(PDBTools.SMALLPDB);
+julia> atoms = read_pdb(PDBTools.test_file("small.pdb"));
 
 julia> get_atoms(atoms[1]) == atoms[1]
 true
@@ -724,7 +724,7 @@ and the `io` argument can be used to specify a different output stream.
 ```jldoctest
 julia> using PDBTools
 
-julia> atoms = read_pdb(PDBTools.TESTPDB, "protein and residue 2");
+julia> atoms = read_pdb(PDBTools.test_file("structure.pdb"), "protein and residue 2");
 
 julia> printatom(atoms[1])
    index name resname chain   resnum  residue        x        y        z occup  beta model segname index_pdb

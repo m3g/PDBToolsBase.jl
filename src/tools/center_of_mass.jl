@@ -8,7 +8,7 @@ Calculate the center of mass of the atoms.
 ```jldoctest
 julia> using PDBTools
 
-julia> atoms = read_pdb(PDBTools.SMALLPDB);
+julia> atoms = read_pdb(PDBTools.test_file("small.pdb"));
 
 julia> center_of_mass(atoms)
 3-element StaticArraysCore.SVector{3, Float32} with indices SOneTo(3):
@@ -46,7 +46,7 @@ Move the center of mass of the atoms to the specified `center` position, which d
 ```jldoctest
 julia> using PDBTools
 
-julia> atoms = read_pdb(PDBTools.SMALLPDB);
+julia> atoms = read_pdb(PDBTools.test_file("small.pdb"));
 
 julia> center_of_mass(atoms)
 3-element StaticArraysCore.SVector{3, Float32} with indices SOneTo(3):

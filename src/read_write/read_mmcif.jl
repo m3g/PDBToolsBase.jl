@@ -45,7 +45,7 @@ Source: https://mmcif.wwpdb.org/docs/tutorials/content/atomic-description.html
 ```jldoctest
 julia> using PDBTools
 
-julia> ats = read_mmcif(PDBTools.TESTCIF)
+julia> ats = read_mmcif(PDBTools.test_file("small.cif"))
    Structure{Atom{Nothing}} with 76 atoms - with unit cell
    index name resname chain   resnum  residue        x        y        z occup  beta model segname index_pdb
        1    N     GLY     A        1        1   -4.564   25.503   24.113  1.00 24.33     1                 1
@@ -54,13 +54,13 @@ julia> ats = read_mmcif(PDBTools.TESTCIF)
       75    O     HOH     Q       63       15   -3.585   34.725   20.903  1.00 19.82     1              2980
       76    O     HOH     Q       64       16   -4.799   40.689   37.419  1.00 20.13     1              2981
 
-julia> ats = read_mmcif(PDBTools.TESTCIF, "index < 3")
+julia> ats = read_mmcif(PDBTools.test_file("small.cif"), "index < 3")
    Structure{Atom{Nothing}} with 2 atoms - with unit cell
    index name resname chain   resnum  residue        x        y        z occup  beta model segname index_pdb
        1    N     GLY     A        1        1   -4.564   25.503   24.113  1.00 24.33     1                 1
        2   CA     GLY     A        1        1   -4.990   26.813   24.706  1.00 24.29     1                 2
 
-julia> ats = read_mmcif(PDBTools.TESTCIF, at -> name(at) == "CA")
+julia> ats = read_mmcif(PDBTools.test_file("small.cif"), at -> name(at) == "CA")
    Structure{Atom{Nothing}} with 11 atoms - with unit cell
    index name resname chain   resnum  residue        x        y        z occup  beta model segname index_pdb
        2   CA     GLY     A        1        1   -4.990   26.813   24.706  1.00 24.29     1                 2

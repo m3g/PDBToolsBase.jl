@@ -57,7 +57,7 @@ sharing the metadata with the original one.
 ```jldoctest
 julia> using PDBTools
 
-julia> s = Structure(read_pdb(PDBTools.SMALLPDB); unitcell=UnitCell(10.0, 10.0, 10.0));
+julia> s = Structure(read_pdb(PDBTools.test_file("small.pdb")); unitcell=UnitCell(10.0, 10.0, 10.0));
 
 julia> s.unitcell
 UnitCell(a=10.000, b=10.000, c=10.000, α=90.00, β=90.00, γ=90.00)

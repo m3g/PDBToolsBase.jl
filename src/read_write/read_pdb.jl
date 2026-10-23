@@ -25,7 +25,7 @@ When reading an mmCIF file, the following keyword arguments are forwarded to the
 ```jldoctest
 julia> using PDBTools
 
-julia> protein = read_pdb(PDBTools.TESTPDB)
+julia> protein = read_pdb(PDBTools.test_file("structure.pdb"))
    Structure{Atom{Nothing}} with 62026 atoms
    index name resname chain   resnum  residue        x        y        z occup  beta model segname index_pdb
        1    N     ALA     A        1        1   -9.229  -14.861   -5.481  0.00  0.00     1    PROT         1
@@ -34,7 +34,7 @@ julia> protein = read_pdb(PDBTools.TESTPDB)
    62025   H1    TIP3     C     9339    19638   13.218   -3.647  -34.453  1.00  0.00     1    WAT2     62025
    62026   H2    TIP3     C     9339    19638   12.618   -4.977  -34.303  1.00  0.00     1    WAT2     62026
 
-julia> ALA = read_pdb(PDBTools.TESTPDB,"resname ALA")
+julia> ALA = read_pdb(PDBTools.test_file("structure.pdb"),"resname ALA")
    Structure{Atom{Nothing}} with 72 atoms
    index name resname chain   resnum  residue        x        y        z occup  beta model segname index_pdb
        1    N     ALA     A        1        1   -9.229  -14.861   -5.481  0.00  0.00     1    PROT         1
@@ -43,7 +43,7 @@ julia> ALA = read_pdb(PDBTools.TESTPDB,"resname ALA")
     1339    C     ALA     A       95       95   14.815   -3.057   -5.633  1.00  0.00     1    PROT      1339
     1340    O     ALA     A       95       95   14.862   -2.204   -6.518  1.00  0.00     1    PROT      1340
 
-julia> ALA = read_pdb(PDBTools.TESTPDB, atom -> atom.resname == "ALA")
+julia> ALA = read_pdb(PDBTools.test_file("structure.pdb"), atom -> atom.resname == "ALA")
    Structure{Atom{Nothing}} with 72 atoms
    index name resname chain   resnum  residue        x        y        z occup  beta model segname index_pdb
        1    N     ALA     A        1        1   -9.229  -14.861   -5.481  0.00  0.00     1    PROT         1

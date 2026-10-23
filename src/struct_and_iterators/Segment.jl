@@ -14,7 +14,7 @@ in the segment atoms will be reflected in the original vector of atoms.
 ```jldoctest
 julia> using PDBTools
 
-julia> ats = read_pdb(PDBTools.DIMERPDB);
+julia> ats = read_pdb(PDBTools.test_file("dimer.pdb"));
 
 julia> segments = collect(eachsegment(ats))
 2-element Vector{Segment}[
@@ -62,7 +62,7 @@ Iterator for the segments of a selection.
 ```jldoctest
 julia> using PDBTools
 
-julia> ats = read_pdb(PDBTools.DIMERPDB);
+julia> ats = read_pdb(PDBTools.test_file("dimer.pdb"));
 
 julia> sit = eachsegment(ats)
  Segment iterator with length = 2
@@ -103,7 +103,7 @@ Returns the name (segment name) of the segment.
 ```jldoctest
 julia> using PDBTools
 
-julia> atoms = read_pdb(PDBTools.DIMERPDB);
+julia> atoms = read_pdb(PDBTools.test_file("dimer.pdb"));
 
 julia> segments = collect(eachsegment(atoms));
 
@@ -132,7 +132,7 @@ Returns the segment name of the segment.
 ```jldoctest
 julia> using PDBTools
 
-julia> atoms = read_pdb(PDBTools.DIMERPDB);
+julia> atoms = read_pdb(PDBTools.test_file("dimer.pdb"));
 
 julia> segments = collect(eachsegment(atoms));
 
@@ -161,7 +161,7 @@ Returns the total mass of all atoms in the segment.
 ```jldoctest
 julia> using PDBTools
 
-julia> atoms = read_pdb(PDBTools.DIMERPDB);
+julia> atoms = read_pdb(PDBTools.test_file("dimer.pdb"));
 
 julia> segments = collect(eachsegment(atoms));
 
@@ -190,7 +190,7 @@ Returns a view of the atoms that belong to the segment.
 ```jldoctest
 julia> using PDBTools
 
-julia> atoms = read_pdb(PDBTools.DIMERPDB);
+julia> atoms = read_pdb(PDBTools.test_file("dimer.pdb"));
 
 julia> segments = collect(eachsegment(atoms));
 

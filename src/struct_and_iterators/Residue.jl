@@ -114,7 +114,7 @@ Returns the name (residue name) of the residue.
 ```jldoctest
 julia> using PDBTools
 
-julia> atoms = read_pdb(PDBTools.SMALLPDB);
+julia> atoms = read_pdb(PDBTools.test_file("small.pdb"));
 
 julia> residues = collect(eachresidue(atoms));
 
@@ -143,7 +143,7 @@ Returns the residue name of the residue.
 ```jldoctest
 julia> using PDBTools
 
-julia> atoms = read_pdb(PDBTools.SMALLPDB);
+julia> atoms = read_pdb(PDBTools.test_file("small.pdb"));
 
 julia> residues = collect(eachresidue(atoms));
 
@@ -172,7 +172,7 @@ Returns the full residue name of the residue.
 ```jldoctest
 julia> using PDBTools
 
-julia> atoms = read_pdb(PDBTools.SMALLPDB);
+julia> atoms = read_pdb(PDBTools.test_file("small.pdb"));
 
 julia> residues = collect(eachresidue(atoms));
 
@@ -201,7 +201,7 @@ Returns the sequential residue (molecule) number of the residue in the structure
 ```jldoctest
 julia> using PDBTools
 
-julia> atoms = read_pdb(PDBTools.SMALLPDB);
+julia> atoms = read_pdb(PDBTools.test_file("small.pdb"));
 
 julia> residues = collect(eachresidue(atoms));
 
@@ -230,7 +230,7 @@ Returns the residue number as written in the PDB file.
 ```jldoctest
 julia> using PDBTools
 
-julia> atoms = read_pdb(PDBTools.SMALLPDB);
+julia> atoms = read_pdb(PDBTools.test_file("small.pdb"));
 
 julia> residues = collect(eachresidue(atoms));
 
@@ -259,7 +259,7 @@ Returns the chain identifier of the residue.
 ```jldoctest
 julia> using PDBTools
 
-julia> atoms = read_pdb(PDBTools.SMALLPDB);
+julia> atoms = read_pdb(PDBTools.test_file("small.pdb"));
 
 julia> residues = collect(eachresidue(atoms));
 
@@ -288,7 +288,7 @@ Returns the model number of the residue.
 ```jldoctest
 julia> using PDBTools
 
-julia> atoms = read_pdb(PDBTools.SMALLPDB);
+julia> atoms = read_pdb(PDBTools.test_file("small.pdb"));
 
 julia> residues = collect(eachresidue(atoms));
 
@@ -317,7 +317,7 @@ Returns the segment name of the residue.
 ```jldoctest
 julia> using PDBTools
 
-julia> atoms = read_pdb(PDBTools.SMALLPDB);
+julia> atoms = read_pdb(PDBTools.test_file("small.pdb"));
 
 julia> residues = collect(eachresidue(atoms));
 
@@ -346,7 +346,7 @@ Returns the total mass of all atoms in the residue.
 ```jldoctest
 julia> using PDBTools
 
-julia> atoms = read_pdb(PDBTools.SMALLPDB);
+julia> atoms = read_pdb(PDBTools.test_file("small.pdb"));
 
 julia> residues = collect(eachresidue(atoms));
 
@@ -375,7 +375,7 @@ Returns a view of the atoms that belong to the residue.
 ```jldoctest
 julia> using PDBTools
 
-julia> atoms = read_pdb(PDBTools.SMALLPDB);
+julia> atoms = read_pdb(PDBTools.test_file("small.pdb"));
 
 julia> residues = collect(eachresidue(atoms));
 
@@ -408,7 +408,7 @@ and 0 is returned.
 ```jldoctest
 julia> using PDBTools
 
-julia> atoms = read_pdb(PDBTools.TESTPDB, "protein and resname GLU");
+julia> atoms = read_pdb(PDBTools.test_file("structure.pdb"), "protein and resname GLU");
 
 julia> residues = collect(eachresidue(atoms));
 

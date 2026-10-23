@@ -226,7 +226,7 @@ the function uses the coordinates in the positions array.
 ```jldoctest
 julia> using PDBTools
 
-julia> ats = read_pdb(PDBTools.DIMERPDB);
+julia> ats = read_pdb(PDBTools.test_file("dimer.pdb"));
 
 julia> residues = collect(eachresidue(ats));
 

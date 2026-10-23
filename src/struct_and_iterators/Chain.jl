@@ -13,7 +13,7 @@ structure atoms, will overwrite the original vector of atoms.
 ```jldoctest
 julia> using PDBTools
 
-julia> ats = read_pdb(PDBTools.CHAINSPDB);
+julia> ats = read_pdb(PDBTools.test_file("chains.pdb"));
 
 julia> chains = collect(eachchain(ats))
 4-element Vector{Chain}[
@@ -75,7 +75,7 @@ Iterator for the chains of a selection.
 ```jldoctest
 julia> using PDBTools
 
-julia> ats = read_pdb(PDBTools.CHAINSPDB);
+julia> ats = read_pdb(PDBTools.test_file("chains.pdb"));
 
 julia> eachchain(ats)
  Chain iterator with length = 4
@@ -112,7 +112,7 @@ Returns the name (chain identifier) of the chain.
 ```jldoctest
 julia> using PDBTools
 
-julia> atoms = read_pdb(PDBTools.CHAINSPDB);
+julia> atoms = read_pdb(PDBTools.test_file("chains.pdb"));
 
 julia> chains = collect(eachchain(atoms));
 
@@ -141,7 +141,7 @@ Returns the chain identifier of the chain.
 ```jldoctest
 julia> using PDBTools
 
-julia> atoms = read_pdb(PDBTools.CHAINSPDB);
+julia> atoms = read_pdb(PDBTools.test_file("chains.pdb"));
 
 julia> chains = collect(eachchain(atoms));
 
@@ -170,7 +170,7 @@ Returns the model number of the chain.
 ```jldoctest
 julia> using PDBTools
 
-julia> atoms = read_pdb(PDBTools.CHAINSPDB);
+julia> atoms = read_pdb(PDBTools.test_file("chains.pdb"));
 
 julia> chains = collect(eachchain(atoms));
 
@@ -199,7 +199,7 @@ Returns the segment name of the chain.
 ```jldoctest
 julia> using PDBTools
 
-julia> atoms = read_pdb(PDBTools.TESTPDB, "protein");
+julia> atoms = read_pdb(PDBTools.test_file("structure.pdb"), "protein");
 
 julia> chains = collect(eachchain(atoms));
 
@@ -228,7 +228,7 @@ Returns the total mass of all atoms in the chain.
 ```jldoctest
 julia> using PDBTools
 
-julia> atoms = read_pdb(PDBTools.CHAINSPDB);
+julia> atoms = read_pdb(PDBTools.test_file("chains.pdb"));
 
 julia> chains = collect(eachchain(atoms));
 
@@ -257,7 +257,7 @@ Returns a view of the atoms that belong to the chain.
 ```jldoctest
 julia> using PDBTools
 
-julia> atoms = read_pdb(PDBTools.CHAINSPDB);
+julia> atoms = read_pdb(PDBTools.test_file("chains.pdb"));
 
 julia> chains = collect(eachchain(atoms));
 
