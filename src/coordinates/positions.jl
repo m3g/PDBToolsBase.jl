@@ -70,7 +70,7 @@ end
 #
 positions(residue::Residue, selection_function::F=all) where {F<:Function} = positions(residue.atoms[residue.range], selection_function)
 
-@testitem "positions" begin
+@testitem "positions" setup = [PublicNames] begin
     atoms = read_pdb(PDBToolsBase.TESTPDB)
     s = filter(at -> residue(at) == 3, atoms)
     @test all(isapprox.(stack(positions(s)), [

@@ -17,19 +17,25 @@ using TestItemRunner
     <(a::Allocs, b::Real) = a.prodbuild ? a.allocs < Int(b) : true
 end
 
+# PDBToolsBase exports nothing: this snippet brings its public names into the scope
+# of the test items
+@testsnippet PublicNames begin
+    for n in names(PDBToolsBase)
+        n == :PDBToolsBase || @eval using PDBToolsBase: $n
+    end
+end
+
 @run_package_tests
 
-@testitem "Aqua.test_all" begin
+@testitem "Aqua.test_all" setup = [PublicNames] begin
     import Aqua
     Aqua.test_all(PDBToolsBase)
 end
 
 # The public API is defined in docs/src/api.md: every public name must have a docstring
 # (the documentation build checks that all of them are included in the API page)
-@testitem "public names are documented" begin
-    if VERSION >= v"1.11"
-        public_names = filter(n -> Base.ispublic(PDBToolsBase, n), names(PDBToolsBase; all=true))
-        @test length(public_names) > 100
-        @test filter(n -> !Base.Docs.hasdoc(PDBToolsBase, n), public_names) == Symbol[]
-    end
+@testitem "public names are documented" setup = [PublicNames] begin
+    public_names = filter(n -> Base.ispublic(PDBToolsBase, n), names(PDBToolsBase; all=true))
+    @test length(public_names) > 50
+    @test filter(n -> !Base.Docs.hasdoc(PDBToolsBase, n), public_names) == Symbol[]
 end

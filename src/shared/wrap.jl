@@ -117,7 +117,7 @@ end
     return x
 end
 
-@testitem "wrap" begin
+@testitem "wrap" setup = [PublicNames] begin
     using PDBToolsBase: wrap
     using StaticArrays
     # Test wrapping of a vector

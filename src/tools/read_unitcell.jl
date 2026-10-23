@@ -179,7 +179,7 @@ function matrix_to_lattice(M::AbstractMatrix)
     return (a=a, b=b, c=c, α=α, β=β, γ=γ)
 end
 
-@testitem "read_unitcell" begin
+@testitem "read_unitcell" setup = [PublicNames] begin
     using PDBToolsBase
 
     a, b, c = 54.530, 63.780, 82.340

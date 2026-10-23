@@ -120,7 +120,7 @@ end
 #    end
 #end
 
-@testitem "_parse" begin
+@testitem "_parse" setup = [PublicNames] begin
     using PDBToolsBase: _parse, _parse_charge
     @test _parse(Int, "  1  ") == 1
     @test _parse(Int, "  A  ") == 10

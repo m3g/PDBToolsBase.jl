@@ -219,7 +219,7 @@ function write_mmcif(
     end
 end
 
-@testitem "write_mmcif" begin
+@testitem "write_mmcif" setup = [PublicNames] begin
     using PDBToolsBase
     ats = read_pdb(PDBToolsBase.SMALLPDB)
     tmpfile = tempname() * ".cif"

@@ -166,7 +166,7 @@ get_atoms(model::Model) = @view(model.atoms[model.range])
 #
 # Testing interface
 #
-@testitem "Model iterator" begin
+@testitem "Model iterator" setup = [PublicNames] begin
     using PDBToolsBase
     atoms = read_pdb(joinpath(PDBToolsBase.test_dir, "8S8N.cif"))
     models = eachmodel(atoms)
@@ -219,7 +219,7 @@ function Base.show(io::IO, mod::Model)
     end
 end
 
-@testitem "Model show" begin
+@testitem "Model show" setup = [PublicNames] begin
     using PDBToolsBase
     using ShowMethodTesting
     ENV["LINES"] = 10

@@ -228,7 +228,7 @@ function remove_custom_elements!(elements=PDBToolsBase.elements)
     return PDBToolsBase.elements
 end
 
-@testitem "elements" begin
+@testitem "elements" setup = [PublicNames] begin
     atoms = read_pdb(PDBToolsBase.TESTPDB, isprotein)
     @test element.(filter(at -> residue(at) == 1, atoms)) == ["N", "H", "H", "H", "C", "H", "C", "H", "H", "H", "C", "O"]
     @test element_name.(filter(at -> residue(at) == 1, atoms)) == [

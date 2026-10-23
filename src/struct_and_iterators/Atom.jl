@@ -138,7 +138,7 @@ function ==(at1::Atom, at2::Atom)
     return true
 end
 
-@testitem "Atom constructors" begin
+@testitem "Atom constructors" setup = [PublicNames] begin
     using Chairmarks
     atref = Atom{Nothing}(0, 0, "X", "XXX", "X", 0, 0, 0.0f0, 0.0f0, 0.0f0, 0.0f0, 0.0f0, 0, "", "X", 0.0f0, nothing, 0)
     at = Atom()
@@ -537,7 +537,7 @@ true
 get_atoms(atom::Atom) = atom
 get_atoms(atoms::AbstractVector{<:Atom}) = atoms
 
-@testitem "Atom default fields" begin
+@testitem "Atom default fields" setup = [PublicNames] begin
     using PDBToolsBase
     atoms = read_pdb(PDBToolsBase.TESTPDB, at -> isprotein(at) && residue(at) == 2)
     atom = atoms[1]
@@ -569,7 +569,7 @@ function Base.copy(atom::Atom{CustomType}) where {CustomType}
     end
 end
 
-@testitem "copy atom" begin
+@testitem "copy atom" setup = [PublicNames] begin
     using PDBToolsBase
     at1 = Atom()
     at2 = copy(at1)
@@ -599,7 +599,7 @@ function add_custom_field(atom::Atom, value)
     return new_atom
 end
 
-@testitem "Atom custom fields" begin
+@testitem "Atom custom fields" setup = [PublicNames] begin
     atom = Atom(; custom=Dict(:a => 1, :b => "b", :index => 1))
     @test atom.index == 0
     @test atom.custom[:a] == 1
@@ -652,7 +652,7 @@ function set_position!(atom::Atom, x::Union{Tuple,AbstractVector})
     return atom
 end
 
-@testitem "Atom positions" begin
+@testitem "Atom positions" setup = [PublicNames] begin
     using PDBToolsBase
     using StaticArrays
     at = Atom(name="N", x=1.0, y=2.0, z=3.0)
@@ -698,7 +698,7 @@ atom_line(atom::Atom; indent=0) = repeat(' ', indent) * @sprintf(
     atom.index_pdb
 )
 
-@testitem "atom_line" begin
+@testitem "atom_line" setup = [PublicNames] begin
     using PDBToolsBase
     atoms = read_pdb(PDBToolsBase.SMALLPDB, at -> isprotein(at) && index(at) == 1)
     @test PDBToolsBase.atom_line(atoms[1]) ==
@@ -837,7 +837,7 @@ function Base.show(io::IO, vecat::AbstractVector{<:AbstractVecOrMat{<:Atom}})
 end
 Base.show(io::IO, ::MIME"text/plain", vecat::AbstractVector{<:AbstractVecOrMat{<:Atom}}) = show(io, vecat)
 
-@testitem "atom - show" begin
+@testitem "atom - show" setup = [PublicNames] begin
     using PDBToolsBase
     using ShowMethodTesting
     ENV["LINES"] = 10
@@ -911,8 +911,6 @@ end
 #
 # atom properties on the structure
 #
-export isprotein, isbackbone, issidechain
-export isnucleoside
 isprotein(atom::Atom) =
     haskey(protein_residues, atom.resname) || haskey(protein_residues, @view(atom.resname[2:end]))
 isnucleoside(atom::Atom) = haskey(nucleoside_residues, atom.resname)
@@ -925,7 +923,7 @@ const not_side_chain_atoms = StringType["N", "CA", "C", "O", "HN", "H", "HA", "H
 issidechain(atom::Atom; not_side_chain_atoms=not_side_chain_atoms) =
     !(atom.name in not_side_chain_atoms) && isprotein(atom)
 
-@testitem "atoms in struct" begin
+@testitem "atoms in struct" setup = [PublicNames] begin
     pdb = read_pdb(PDBToolsBase.TESTPDB)
     glu = filter(at -> resname(at) == "GLU", pdb)
     @test isbackbone(glu[1])
@@ -954,7 +952,7 @@ function same_residue(atom1::Atom, atom2::Atom)
     return true
 end
 
-@testitem "same_residue" begin
+@testitem "same_residue" setup = [PublicNames] begin
     pdb = read_pdb(PDBToolsBase.TESTPDB, isprotein)
     import PDBToolsBase: same_residue
     @test same_residue(pdb[1], pdb[2])
@@ -1020,7 +1018,7 @@ function element(atom::Atom)
     return nothing
 end
 
-@testitem "get element" begin
+@testitem "get element" setup = [PublicNames] begin
     using PDBToolsBase
     atoms = read_pdb(PDBToolsBase.TESTPDB, at -> isprotein(at) && residue(at) == 2)
     @test element(atoms[1]) == "N"
@@ -1188,7 +1186,7 @@ function mass(atoms::AbstractVector{<:Atom})
     return totmass
 end
 
-@testitem "fetch atomic element properties" setup = [AllocTest] begin
+@testitem "fetch atomic element properties" setup = [AllocTest, PublicNames] begin
     using PDBToolsBase
     using Chairmarks
     using .AllocTest: Allocs
@@ -1214,7 +1212,7 @@ end
     @test a.allocs == Allocs(0)
 end
 
-@testitem "AtomsBase interface" begin
+@testitem "AtomsBase interface" setup = [PublicNames] begin
     using PDBToolsBase
     import StaticArrays
     at = Atom(name="NT3")

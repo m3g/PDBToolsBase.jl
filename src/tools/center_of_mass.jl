@@ -28,7 +28,7 @@ function center_of_mass(atoms::AbstractVector{<:Atom})
     return center
 end
 
-@testitem "center_of_mass" begin
+@testitem "center_of_mass" setup = [PublicNames] begin
     using PDBToolsBase
     atoms = [Atom(name="C", x=-1.0, y=-1.0, z=-1.0), Atom(name="C", x=1.0, y=1.0, z=1.0)]
     @test center_of_mass(atoms) ≈ [0.0, 0.0, 0.0] atol = 1e-10
@@ -73,7 +73,7 @@ function moveto!(atoms::AbstractVector{<:Atom}; center::AbstractVector{<:Real}=S
     return atoms
 end
 
-@testitem "moveto!" begin
+@testitem "moveto!" setup = [PublicNames] begin
     using PDBToolsBase
     atoms = read_pdb(PDBToolsBase.SMALLPDB)
     @test center_of_mass(moveto!(atoms)) ≈ [0.0, 0.0, 0.0] atol = 1e-5

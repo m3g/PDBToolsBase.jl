@@ -4,7 +4,10 @@ makedocs(
     modules = [PDBToolsBase],
     sitename = "PDBToolsBase.jl",
     repo = Remotes.GitHub("m3g", "PDBToolsBase.jl"),
-    format = Documenter.HTML(prettyurls = get(ENV, "CI", nothing) == "true"),
+    format = Documenter.HTML(
+        prettyurls = get(ENV, "CI", nothing) == "true",
+        edit_link = "main",
+    ),
     # The examples in the docstrings use PDBTools.jl, and are tested in its documentation
     doctest = false,
     # Every public name must be documented in the API page
@@ -18,5 +21,6 @@ deploydocs(
     repo = "github.com/m3g/PDBToolsBase.jl.git",
     target = "build",
     branch = "gh-pages",
+    devbranch = "main",
     versions = ["stable" => "v^", "v#.#"],
 )

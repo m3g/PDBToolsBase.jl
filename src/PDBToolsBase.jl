@@ -2,7 +2,7 @@
     PDBToolsBase
 
 Core data structures and input/output functions of PDBTools.jl. This is an infrastructure
-package: end users should use PDBTools.jl, which re-exports everything defined here and
+package: end users should use PDBTools.jl, which re-exports the public names defined here and
 contains the user documentation.
 """
 module PDBToolsBase
@@ -10,7 +10,6 @@ module PDBToolsBase
 import Dates
 import PrecompileTools
 import Printf
-using Compat: @compat
 using LinearAlgebra: eigvecs, norm, cross, dot
 using Printf: @printf, @sprintf
 using StaticArrays: SVector, SMatrix, MMatrix
@@ -24,45 +23,49 @@ const VERSION = pkgversion(@__MODULE__)
 # Default fixed String size for names, chains, segments, etc.
 const StringType = String15
 
-export atomic_number, atomic_symbol, atomic_mass, position, set_position!
+# The package exports nothing: the names below are public, and are imported explicitly
+# by the packages that use them (PDBTools.jl re-exports them)
+public atomic_number, atomic_symbol, atomic_mass, position, set_position!
 
-export read_pdb, write_pdb, getseq, oneletter, threeletter, residuename
-export read_mmcif, write_mmcif
-export Atom, printatom, index, index_pdb, name, beta, occup, charge, pdb_element
-export Structure, UnitCell
-@compat public MetaData
-export add_custom_field
-export Residue, eachresidue, resname, residue, resnum, model, segname, zeta, zeta_check
-export get_atoms
-export Chain, eachchain, chain
-export residue_ticks
-export Segment, eachsegment
-export Model, eachmodel
-export positions, maxmin, distance, closest, dihedral, Ramachandran, set_phi!, set_psi!, extended_chain!, extended_chain
-export residue_residue_distance
-export element, mass, element_name, element_symbol, element_symbol_string, element_vdw_radius
-export formula, stoichiometry
-export Sequence
+public read_pdb, write_pdb, oneletter, threeletter, residuename
+public read_mmcif, write_mmcif
+public Atom, printatom, index, index_pdb, name, beta, occup, charge, pdb_element
+public Structure, UnitCell, MetaData
+public add_custom_field
+public Residue, eachresidue, resname, residue, resnum, model, segname
+public get_atoms
+public Chain, eachchain, chain
+public Segment, eachsegment
+public Model, eachmodel
+public positions, maxmin, distance, closest, dihedral
+public residue_residue_distance
+public element, mass, element_name, element_symbol, element_symbol_string, element_vdw_radius
+public Sequence
+
+# Classification of atoms and residues
+public isprotein, isnucleoside, isbackbone, issidechain, iswater
+public isacidic, isaliphatic, isaromatic, isbasic, ischarged
+public ishydrophobic, isneutral, isnonpolar, ispolar
+public ispurine, ispyrimidine
 
 # Tools
-export center_of_mass
-export moveto!
-export read_unitcell, lattice_to_matrix, matrix_to_lattice
-export save, load
+public center_of_mass
+public moveto!
+public read_unitcell, lattice_to_matrix, matrix_to_lattice
+public save, load
 
 # Custom residue and element definitions
-export add_protein_residue!, remove_custom_protein_residues!
-export add_nucleoside_residue!, remove_custom_nucleoside_residues!
-export isnucleoside, ispurine, ispyrimidine
-export add_element!, remove_custom_elements!
-@compat public Element, elements, ProteinResidue, protein_residues, NucleosideResidue, nucleoside_residues
+public add_protein_residue!, remove_custom_protein_residues!
+public add_nucleoside_residue!, remove_custom_nucleoside_residues!
+public add_element!, remove_custom_elements!
+public Element, elements, ProteinResidue, protein_residues, NucleosideResidue, nucleoside_residues
 
 # Shared function names (formerly in MolSimToolkitShared), to be extended by other packages
-@compat public distances
-@compat public coordination_number, bulk_coordination
-@compat public wrap, wrap_to_first
-@compat public align, align!, rmsd, alignment_movements, apply_alignment_transformation!
-@compat public dihedrals
+public distances
+public coordination_number
+public wrap, wrap_to_first
+public align, align!, rmsd, alignment_movements, apply_alignment_transformation!
+public dihedrals
 
 # Test files
 const src_dir = @__DIR__
@@ -118,8 +121,6 @@ include("./read_write/write_pdb.jl")
 include("./read_write/read_mmcif.jl")
 include("./read_write/write_mmcif.jl")
 
-include("./properties/formula.jl")
-include("./properties/getseq.jl")
 
 # Coordinates-dependent functions
 include("./coordinates/positions.jl")

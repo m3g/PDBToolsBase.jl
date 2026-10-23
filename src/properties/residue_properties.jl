@@ -72,7 +72,7 @@ function resname(residue::Union{AbstractString,Char}; residue_classes=nothing)
     return rname
 end
 
-@testitem "resname" begin
+@testitem "resname" setup = [PublicNames] begin
     @test resname("ALA") == "ALA"
     @test resname("A") == "ALA"
     @test resname('A') == "ALA"
@@ -170,7 +170,7 @@ function threeletter(::Type{StringType}, residue)
     return get(_THREELETTER_LOOKUP, StringType(residue), nothing)
 end
 
-@testitem "threeletter" begin
+@testitem "threeletter" setup = [PublicNames] begin
     @test threeletter("HIS") == "HIS"
     @test threeletter("H") == "HIS"
     @test threeletter("E") == "GLU"
@@ -215,7 +215,7 @@ function oneletter(residue::Union{AbstractString,Char})
     return olc
 end
 
-@testitem "oneletter" begin
+@testitem "oneletter" setup = [PublicNames] begin
     @test oneletter("ALA") == "A"
     @test oneletter("A") == "A"
     @test oneletter('A') == "A"
@@ -259,7 +259,7 @@ function residuename(residue::Union{AbstractString,Char}; residue_classes=nothin
     return residue_name
 end
 
-@testitem "residuename" begin
+@testitem "residuename" setup = [PublicNames] begin
     @test residuename("A") == "Alanine"
     @test residuename("A"; residue_classes=:nucleoside_residues) == "Adenosine"
     @test residuename("GLUP") == "Glutamic acid (protonated)"
@@ -332,7 +332,7 @@ function mass(s::Sequence; residue_classes=nothing)
     return m
 end
 
-@testitem "sequence mass" begin
+@testitem "sequence mass" setup = [PublicNames] begin
     @test mass(Sequence("AEG")) ≈ 257.2432
     @test mass(Sequence(["ALA", "GLU", "GLY"])) ≈ 257.2432
     @test mass(Sequence(["A", "E", "G"])) ≈ 257.2432

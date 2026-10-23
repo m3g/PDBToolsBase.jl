@@ -270,7 +270,7 @@ julia> length(chain_atoms)
 """
 get_atoms(chain::Chain) = @view(chain.atoms[chain.range])
 
-@testitem "Chain iterator" begin
+@testitem "Chain iterator" setup = [PublicNames] begin
     using PDBToolsBase
     pdb = read_pdb(PDBToolsBase.CHAINSPDB)
     ichains = eachchain(pdb)
@@ -317,7 +317,7 @@ function Base.show(io::IO, ch::Chain)
     end
 end
 
-@testitem "Chain show" begin
+@testitem "Chain show" setup = [PublicNames] begin
     using PDBToolsBase
     using ShowMethodTesting
     ENV["LINES"] = 10

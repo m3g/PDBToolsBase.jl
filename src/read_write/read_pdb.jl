@@ -170,7 +170,7 @@ function read_atom_pdb(record::AbstractString, lastatom::Atom=Atom{Nothing}(), i
     return atom
 end
 
-@testitem "read_pdb" begin
+@testitem "read_pdb" setup = [PublicNames] begin
     pdb_file = PDBToolsBase.TESTPDB
     pdbdata = read(pdb_file, String)
     atoms = read_pdb(IOBuffer(pdbdata), at -> isprotein(at) && name(at) == "CA")
@@ -185,7 +185,7 @@ end
     @test atoms == atoms_ref
 end
 
-@testitem "read_atom_pdb" begin
+@testitem "read_atom_pdb" setup = [PublicNames] begin
     line = "HETATM    1  O1  BGL    1       0.665   1.214  -0.259  1.00  0.00"
     a = PDBToolsBase.read_atom_pdb(line)
     @test a.index == 1
@@ -253,7 +253,7 @@ end
     @test a.resnum == 65535
 end
 
-@testitem "abstract string" begin
+@testitem "abstract string" setup = [PublicNames] begin
     file = PDBToolsBase.TESTPDB * "abc"
     s = read_pdb(@view(file[1:end-3]))
     @test length(s) == 62026
@@ -262,7 +262,7 @@ end
     @test isfile(tmpfile)
 end
 
-@testitem "switch to mmCIF" begin
+@testitem "switch to mmCIF" setup = [PublicNames] begin
     p1 = read_mmcif(PDBToolsBase.CIF_2C_CHAIN)
     p2 = read_pdb(PDBToolsBase.CIF_2C_CHAIN)
     @test p1 == p2
@@ -272,7 +272,7 @@ end
     @test p1 == p2
 end
 
-@testitem "read Structure and unit cell" begin
+@testitem "read Structure and unit cell" setup = [PublicNames] begin
     using PDBToolsBase
     # PDB file with CRYST1 field
     s = read_pdb(PDBToolsBase.TESTPBC)

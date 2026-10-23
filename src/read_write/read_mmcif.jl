@@ -203,7 +203,7 @@ function _supported_read_cif_fields(field_assignment)
     return replace_custom_fields!(_atom_symbol_for_cif_field, field_assignment)
 end
 
-@testitem "_supported_read_cif_fields" begin
+@testitem "_supported_read_cif_fields" setup = [PublicNames] begin
     using PDBToolsBase
     using PDBToolsBase: StringType
     using InlineStrings
@@ -356,7 +356,7 @@ end
     end
 end
 
-@testitem "read_mmcif" setup = [AllocTest] begin
+@testitem "read_mmcif" setup = [AllocTest, PublicNames] begin
     using PDBToolsBase
     using Chairmarks
     using .AllocTest: Allocs

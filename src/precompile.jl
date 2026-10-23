@@ -36,7 +36,6 @@ PrecompileTools.@setup_workload begin
         ats = read_mmcif(PDBToolsBase.TESTCIF)
         ats = read_pdb(PDBToolsBase.SMALLPDB)
         positions(ats)
-        getseq(ats)
         center_of_mass(ats)
         eachresidue(ats)
         eachchain(ats)
@@ -44,7 +43,6 @@ PrecompileTools.@setup_workload begin
         eachmodel(ats)
         write_pdb(tempname(), ats)
         write_mmcif(tempname(), ats)
-        residue_ticks(ats)
         moveto!(ats; center=[0.0, 0.0, 0.0])
     end
 end

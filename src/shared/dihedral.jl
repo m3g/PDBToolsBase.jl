@@ -54,7 +54,7 @@ function dihedral(v::AbstractVector; degrees=true)
     return dihedral(v[1], v[2], v[3], v[4]; degrees)
 end
 
-@testitem "dihedral" begin
+@testitem "dihedral" setup = [PublicNames] begin
     using PDBToolsBase: dihedral
     using StaticArrays
 
@@ -130,7 +130,7 @@ function dihedrals(v::AbstractVector{<:AbstractVector}; degrees=true)
     return ds
 end
 
-@testitem "dihedrals" begin
+@testitem "dihedrals" setup = [PublicNames] begin
     using PDBToolsBase: dihedral, dihedrals
     using StaticArrays
     x = SVector{3, Float32}[[-8.483, -14.912, -6.726], [-5.113, -13.737, -5.466], [-3.903, -11.262, -8.062], [-1.162, -9.64, -6.015]]

@@ -70,7 +70,7 @@ function Base.show(io::IO, uc::UnitCell)
 end
 Base.show(io::IO, ::MIME"text/plain", uc::UnitCell) = show(io, uc)
 
-@testitem "UnitCell" begin
+@testitem "UnitCell" setup = [PublicNames] begin
     using PDBToolsBase
     using StaticArrays: SMatrix
     uc = UnitCell(10.0, 20.0, 30.0)

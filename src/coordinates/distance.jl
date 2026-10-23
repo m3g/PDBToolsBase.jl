@@ -132,7 +132,7 @@ function _closest(
     return imin, jmin, dmin
 end
 
-@testitem "distance/closest" begin
+@testitem "distance/closest" setup = [PublicNames] begin
     using PDBToolsBase
     atoms = read_pdb(PDBToolsBase.TESTPDB)
     s = filter(at -> residue(at) == 3, atoms)
@@ -260,7 +260,7 @@ function _residue_residue_distance(r1::Residue, r2::Residue, positions, unitcell
     return dmin
 end
 
-@testitem "residue_residue_distance" begin
+@testitem "residue_residue_distance" setup = [PublicNames] begin
     using PDBToolsBase
     ats = read_pdb(PDBToolsBase.TESTPDB, isprotein)
     residues = collect(eachresidue(ats))

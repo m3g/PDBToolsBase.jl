@@ -16,14 +16,6 @@ and documented there.
 function distances end
 
 """
-    bulk_coordination
-
-Shared function name: methods are defined by packages of the ecosystem (e.g. MolSimToolkit.jl),
-and documented there.
-"""
-function bulk_coordination end
-
-"""
     save
 
 Shared function name: methods are defined by packages of the ecosystem (e.g. PDBTools.jl,
@@ -39,16 +31,13 @@ ComplexMixtures.jl), and documented there.
 """
 function load end
 
-@testitem "shared names" begin
-    if VERSION >= v"1.11"
-        @test Base.ispublic(PDBToolsBase, :distance)
-        @test Base.ispublic(PDBToolsBase, :distances)
-        @test Base.ispublic(PDBToolsBase, :bulk_coordination)
-        @test Base.ispublic(PDBToolsBase, :positions)
-        @test Base.ispublic(PDBToolsBase, :get_atoms)
-        @test Base.ispublic(PDBToolsBase, :save)
-        @test Base.ispublic(PDBToolsBase, :load)
-    end
+@testitem "shared names" setup = [PublicNames] begin
+    @test Base.ispublic(PDBToolsBase, :distance)
+    @test Base.ispublic(PDBToolsBase, :distances)
+    @test Base.ispublic(PDBToolsBase, :positions)
+    @test Base.ispublic(PDBToolsBase, :get_atoms)
+    @test Base.ispublic(PDBToolsBase, :save)
+    @test Base.ispublic(PDBToolsBase, :load)
 end
 
 """
@@ -67,7 +56,7 @@ function coordination_number(args...; kargs...)
 
     """))
 end
-@testitem "coordination_number" begin
+@testitem "coordination_number" setup = [PublicNames] begin
     import PDBToolsBase: coordination_number
     # The coordination_number(args...; kargs...) is a placeholder for the docs only
     @test_throws ArgumentError coordination_number("string.txt", 1.0)

@@ -8,7 +8,8 @@
 # (Julia 1.13+). Printing uses `Core.stdout`, because `stdout` is not initialized in
 # trimmed executables.
 #
-using PDBToolsBase
+using PDBToolsBase: read_pdb, read_mmcif, write_pdb, write_mmcif, read_unitcell,
+    isprotein, name, eachresidue, eachchain, center_of_mass, moveto!, Structure, UnitCell
 
 function (@main)(ARGS)
     input, output = ARGS[1], ARGS[2]

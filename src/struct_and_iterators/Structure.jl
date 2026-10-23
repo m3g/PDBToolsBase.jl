@@ -170,7 +170,7 @@ function Base.show(io::IO, s::Structure{T}) where {T}
     show(IOContext(io, :type => false, :ntitlelines => ntitlelines), s.atoms)
 end
 
-@testitem "Structure" begin
+@testitem "Structure" setup = [PublicNames] begin
     using PDBToolsBase
     using StaticArrays: SMatrix
     s = Structure(read_pdb(PDBToolsBase.TESTPDB))
@@ -202,7 +202,7 @@ end
     @test_throws MethodError Structure(ats; abc=1)
 end
 
-@testitem "Structure - vector interface" begin
+@testitem "Structure - vector interface" setup = [PublicNames] begin
     using PDBToolsBase
     using StaticArrays: SMatrix
     uc = [10 0 0; 0 10 0; 0 0 10]
@@ -286,7 +286,7 @@ end
     @test_throws "unitcell=true requires" PDBToolsBase._resolve_unitcell(Structure(s.atoms), true)
 end
 
-@testitem "Structure - show" begin
+@testitem "Structure - show" setup = [PublicNames] begin
     using PDBToolsBase
     using ShowMethodTesting
     ENV["LINES"] = 10

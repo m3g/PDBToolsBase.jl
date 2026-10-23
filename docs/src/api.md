@@ -1,3 +1,8 @@
+```@meta
+CurrentModule = PDBToolsBase
+CollapsedDocStrings = true
+```
+
 # Public API
 
 PDBToolsBase.jl follows [semantic versioning](https://semver.org/). This page defines the 
@@ -6,16 +11,18 @@ in a breaking way in a new major version. Anything not listed here is internal, 
 change in any release.
 
 !!! note
-    The docstrings are written for users of PDBTools.jl, which re-exports this package. 
+    The docstrings are written for users of PDBTools.jl, which re-exports the public names of this package.
     Thus, the examples use `using PDBTools`, and refer to `PDBTools.name` for names that are
     public but not exported.
 
 ## What is public
 
-1. **Public names**: the names exported by `PDBToolsBase`, and the names declared `public` 
-   (`Base.ispublic(PDBToolsBase, name) == true`, in Julia ≥ 1.11). All of them are 
-   documented in this page (this is checked when the documentation is built), with the 
-   methods and keyword arguments described in their docstrings.
+1. **Public names**: the names declared `public` in `PDBToolsBase` 
+   (`Base.ispublic(PDBToolsBase, name) == true`). The package exports nothing: public names 
+   are used qualified (`PDBToolsBase.read_pdb`) or imported explicitly 
+   (`using PDBToolsBase: read_pdb`). All of them are documented in this page (this is 
+   checked when the documentation is built), with the methods and keyword arguments 
+   described in their docstrings.
 
 2. **Documented fields and properties**:
     - The fields of [`Atom`](@ref): `index`, `index_pdb`, `name`, `resname`, `chain`, 
@@ -50,7 +57,7 @@ change in any release.
 
 ## What is not public
 
-- Names that are not exported or declared `public`, even if accessible as 
+- Names that are not declared `public`, even if accessible as 
   `PDBToolsBase.name` (for example, the test files `PDBToolsBase.TESTPDB`, or internal 
   functions with names starting with `_`).
 - Methods and keyword arguments that are not described in the docstrings.
@@ -118,7 +125,6 @@ eachresidue
 eachchain
 eachsegment
 eachmodel
-residue_ticks
 ```
 
 ## Elements and residues
@@ -133,14 +139,9 @@ atomic_number
 atomic_symbol
 atomic_mass
 mass
-formula
-stoichiometry
-getseq
 oneletter
 threeletter
 residuename
-zeta
-zeta_check
 ```
 
 ## Classification of atoms and residues
@@ -198,11 +199,6 @@ moveto!
 ```@docs
 dihedral
 PDBToolsBase.dihedrals
-Ramachandran
-set_phi!
-set_psi!
-extended_chain
-extended_chain!
 ```
 
 ## Periodic systems
@@ -232,7 +228,6 @@ functions defined here.
 
 ```@docs
 PDBToolsBase.distances
-PDBToolsBase.bulk_coordination
 PDBToolsBase.coordination_number
 save
 load

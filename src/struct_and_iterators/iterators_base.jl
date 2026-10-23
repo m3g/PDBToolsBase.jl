@@ -86,7 +86,7 @@ function Base.show(io::IO, sit::EachStructuralElement{STYPE}) where {STYPE}
     print(io, " $STYPE iterator with length = $(length(sit))")
 end
 
-@testitem "AbstractStructuralElement interface" begin
+@testitem "AbstractStructuralElement interface" setup = [PublicNames] begin
     using PDBToolsBase
     struct Incomplete{T} <: PDBToolsBase.AbstractStructuralElement{T} 
         atoms::Vector{T}

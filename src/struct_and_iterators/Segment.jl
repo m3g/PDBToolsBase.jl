@@ -203,7 +203,7 @@ julia> length(seg_atoms)
 """
 get_atoms(segment::Segment) = @view(segment.atoms[segment.range])
 
-@testitem "Segment iterator" begin
+@testitem "Segment iterator" setup = [PublicNames] begin
     using PDBToolsBase
     atoms = read_pdb(PDBToolsBase.DIMERPDB)
     segments = eachsegment(atoms)
@@ -255,7 +255,7 @@ function Base.show(io::IO, segment::Segment)
     end
 end
 
-@testitem "Segment show" begin
+@testitem "Segment show" setup = [PublicNames] begin
     using PDBToolsBase
     using ShowMethodTesting
     ENV["LINES"] = 10

@@ -62,7 +62,7 @@ _write_pdb_footer(::IO, ::Nothing) = nothing
 _write_pdb_footer(io::IO, footer) = println(io, footer)
 _write_pdb_footer(io::IO, footer::Symbol) = println(io, footer === :auto ? "END" : String(footer))
 
-@testitem "write_pdb" begin
+@testitem "write_pdb" setup = [PublicNames] begin
     using PDBToolsBase
     using DelimitedFiles
     pdb = read_pdb(PDBToolsBase.SMALLPDB)
@@ -202,7 +202,7 @@ function write_pdb_atom(atom::Atom)
     return line
 end
 
-@testitem "write_pdb_atom" begin
+@testitem "write_pdb_atom" setup = [PublicNames] begin
     using PDBToolsBase
     pdb = read_pdb(PDBToolsBase.SMALLPDB)
     @test PDBToolsBase.write_pdb_atom(pdb[1]) == "ATOM      1  N   ALA A   1      -9.229 -14.861  -5.481  0.00  0.00      PROT N"

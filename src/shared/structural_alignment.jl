@@ -204,7 +204,7 @@ function align!(
     return x
 end
 
-@testitem "structural_alignment" begin
+@testitem "structural_alignment" setup = [PublicNames] begin
     import PDBToolsBase: center_of_mass, align, rmsd
     using StaticArrays: SVector
     using Rotations: RotMatrix3

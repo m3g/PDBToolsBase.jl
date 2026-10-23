@@ -3,7 +3,7 @@
 > [!IMPORTANT]
 > This is an infrastructure package. **If you want to read, write or analyze molecular
 > structures, use [PDBTools.jl](https://github.com/m3g/PDBTools.jl)**, which re-exports
-> everything defined here. The user documentation, including the docstrings of the
+> the public names defined here. The user documentation, including the docstrings of the
 > functions defined in this package, is in the
 > [PDBTools.jl documentation](https://m3g.github.io/PDBTools.jl/stable/).
 

@@ -118,7 +118,7 @@ false
 """
 remove_custom_nucleoside_residues!() = filter!(r -> !last(r).custom, nucleoside_residues)
 
-@testitem "nucleoside residues" begin
+@testitem "nucleoside residues" setup = [PublicNames] begin
     using PDBToolsBase
     remove_custom_nucleoside_residues!()
 
