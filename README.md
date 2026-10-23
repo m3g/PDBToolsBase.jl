@@ -1,3 +1,8 @@
+[![Dev](https://img.shields.io/badge/docs-dev-blue.svg)](https://m3g.github.io/PDBToolsBase.jl/dev)
+[![CI](https://github.com/m3g/PDBToolsBase.jl/actions/workflows/ci.yml/badge.svg)](https://github.com/m3g/PDBToolsBase.jl/actions/workflows/ci.yml)
+[![codecov](https://codecov.io/gh/m3g/PDBToolsBase.jl/branch/main/graph/badge.svg)](https://codecov.io/gh/m3g/PDBToolsBase.jl)
+[![Aqua QA](https://JuliaTesting.github.io/Aqua.jl/dev/assets/badge.svg)](https://github.com/JuliaTesting/Aqua.jl)
+
 # PDBToolsBase.jl
 
 > [!IMPORTANT]
