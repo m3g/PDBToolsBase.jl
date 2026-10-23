@@ -12,7 +12,6 @@ PDBToolsBase.jl Changelog
 
 Version 1.0.0
 -------------
-- ![INFO][badge-info] LazyArtifacts is no longer a dependency: the internal `PDBToolsBase.test_file(name)` is defined in a package extension, available after `using LazyArtifacts`, so neither LazyArtifacts nor Pkg are loaded with the package.
 - ![INFO][badge-info] First version. PDBToolsBase.jl contains the core data structures and input/output functions of PDBTools.jl (from PDBTools 3.41), and the shared function names and utilities of MolSimToolkitShared.jl (from MolSimToolkitShared 1.6), which it replaces. The public API is defined in the documentation.
 - ![INFO][badge-info] The package exports nothing: its API is formed by the names declared `public`, which are used qualified (`PDBToolsBase.read_pdb`) or imported explicitly (`using PDBToolsBase: read_pdb`). Requires Julia ≥ 1.11.
 - ![INFO][badge-info] The test files are not part of the package installation: they are a lazy artifact (from [MolSimTestFiles](https://github.com/m3g/MolSimTestFiles)), downloaded when needed, and accessed with the internal function `PDBToolsBase.test_file(name)`, which is defined in a package extension available after `using LazyArtifacts` (LazyArtifacts is not a dependency of the package).
