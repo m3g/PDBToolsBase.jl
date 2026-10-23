@@ -58,7 +58,7 @@ change in any release.
 ## What is not public
 
 - Names that are not declared `public`, even if accessible as 
-  `PDBToolsBase.name` (for example, the test files `PDBToolsBase.TESTPDB`, or internal 
+  `PDBToolsBase.name` (for example, the test files `PDBToolsBase.test_file(name)`, or internal 
   functions with names starting with `_`).
 - Methods and keyword arguments that are not described in the docstrings.
 - The printed output (`show`) of the types, and the exact formatting (column widths, 

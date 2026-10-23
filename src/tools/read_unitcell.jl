@@ -200,12 +200,12 @@ end
     @test eltype(triclinic_matrix) == Float64
     @test all(isapprox(v1,v2,atol=1e-5) for (v1,v2) in zip(values(matrix_to_lattice(triclinic_matrix)),values((a = 39.85, b = 54.449999999999996, c = 59.84, α = 72.01, β = 89.44, γ = 89.43))))
 
-    @test read_unitcell(PDBToolsBase.TESTPBC) ≈ [107.845 0 0;  0.0  107.845 0; 0.0 0.0 107.845]
+    @test read_unitcell(PDBToolsBase.test_file("pbc_protein.pdb")) ≈ [107.845 0 0;  0.0  107.845 0; 0.0 0.0 107.845]
     @test read_unitcell(PDBToolsBase.TESTCIF) ≈ [74.449 -3.25427f-6 -3.25427f-6; 0.0 74.449 -3.25427f-6; 0.0 0.0 74.449]
     
     # Throw error if unitcel ldata is missing
-    @test_throws ArgumentError read_unitcell(PDBToolsBase.TESTPDB)
-    @test_throws ArgumentError read_unitcell(PDBToolsBase.BROKENCIF)
+    @test_throws ArgumentError read_unitcell(PDBToolsBase.test_file("structure.pdb"))
+    @test_throws ArgumentError read_unitcell(PDBToolsBase.test_file("broken.cif"))
     @test_throws ArgumentError matrix_to_lattice([1 0; 0 1])
 
     # Test allocations of conversions

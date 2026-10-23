@@ -205,7 +205,7 @@ get_atoms(segment::Segment) = @view(segment.atoms[segment.range])
 
 @testitem "Segment iterator" setup = [PublicNames] begin
     using PDBToolsBase
-    atoms = read_pdb(PDBToolsBase.DIMERPDB)
+    atoms = read_pdb(PDBToolsBase.test_file("dimer.pdb"))
     segments = eachsegment(atoms)
     @test length(segments) == 2
     @test firstindex(segments) == 1
@@ -260,7 +260,7 @@ end
     using ShowMethodTesting
     ENV["LINES"] = 10
     ENV["COLUMNS"] = 120
-    ats = read_pdb(PDBToolsBase.DIMERPDB)
+    ats = read_pdb(PDBToolsBase.test_file("dimer.pdb"))
     s = eachsegment(ats)
     @test parse_show(s; repl=Dict("PDBToolsBase." => "")) ≈ "Segment iterator with length = 2"
     sc = collect(s)

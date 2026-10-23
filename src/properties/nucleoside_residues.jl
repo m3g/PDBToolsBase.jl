@@ -62,7 +62,7 @@ julia> using PDBTools
 julia> remove_custom_nucleoside_residues!();
 
 julia> add_nucleoside_residue!("MYN", PDBTools.nucleoside_residues["ADO"])
-PDBTools.NucleosideResidue("MYN", "ADO", "A", "Purine", 267.094691, 267.094691, 0, true)
+PDBToolsBase.NucleosideResidue("MYN", "ADO", "A", "Purine", 267.094691, 267.094691, 0, true)
 
 julia> isnucleoside(Atom(resname="MYN"))
 true
@@ -104,7 +104,7 @@ julia> using PDBTools
 julia> remove_custom_nucleoside_residues!();
 
 julia> add_nucleoside_residue!("MYN", PDBTools.nucleoside_residues["ADO"])
-PDBTools.NucleosideResidue("MYN", "ADO", "A", "Purine", 267.094691, 267.094691, 0, true)
+PDBToolsBase.NucleosideResidue("MYN", "ADO", "A", "Purine", 267.094691, 267.094691, 0, true)
 
 julia> isnucleoside(Atom(resname="MYN"))
 true
@@ -148,10 +148,10 @@ remove_custom_nucleoside_residues!() = filter!(r -> !last(r).custom, nucleoside_
     @test !isnucleoside(Atom(resname="MYN"))
 
     # selections
-    pdb = read_pdb(PDBToolsBase.TESTPDB)
+    pdb = read_pdb(PDBToolsBase.test_file("structure.pdb"))
     @test length(filter(isnucleoside, pdb)) == 0  # no nucleosides in protein test structure
 
-    s = read_pdb(joinpath(PDBToolsBase.test_dir, "7YWH.cif"))
+    s = read_pdb(PDBToolsBase.test_file("7YWH.cif"))
     @test length(s) == 6108
     @test length(filter(isnucleoside, s)) == 6108
     @test length(filter(ispyrimidine, s)) == 3400

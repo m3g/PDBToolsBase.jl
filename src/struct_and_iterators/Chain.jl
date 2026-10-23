@@ -272,7 +272,7 @@ get_atoms(chain::Chain) = @view(chain.atoms[chain.range])
 
 @testitem "Chain iterator" setup = [PublicNames] begin
     using PDBToolsBase
-    pdb = read_pdb(PDBToolsBase.CHAINSPDB)
+    pdb = read_pdb(PDBToolsBase.test_file("chains.pdb"))
     ichains = eachchain(pdb)
     @test Chain(pdb, 1:48).range == 1:48
     @test Chain(pdb[1:48]).range == 1:48
@@ -322,7 +322,7 @@ end
     using ShowMethodTesting
     ENV["LINES"] = 10
     ENV["COLUMNS"] = 120
-    ats = read_pdb(PDBToolsBase.CHAINSPDB)
+    ats = read_pdb(PDBToolsBase.test_file("chains.pdb"))
     c = eachchain(ats)
     @test parse_show(c; repl=Dict("PDBToolsBase." => "")) ≈ "Chain iterator with length = 4"
     cc = collect(c)

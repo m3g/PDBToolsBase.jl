@@ -88,8 +88,11 @@ jobs:
       - name: Run the trimmed executable
         working-directory: test/juliac
         run: |
-          ./build/bin/pdbtoolsbase_smoke ../structure.pdb "$RUNNER_TEMP/out_pdb"
-          ./build/bin/pdbtoolsbase_smoke ../1LBD.cif "$RUNNER_TEMP/out_cif"
+          # The test files are a lazy artifact: test_file downloads them
+          pdb=$(julia --project=. -e 'import PDBToolsBase; print(PDBToolsBase.test_file("structure.pdb"))')
+          cif=$(julia --project=. -e 'import PDBToolsBase; print(PDBToolsBase.test_file("1LBD.cif"))')
+          ./build/bin/pdbtoolsbase_smoke "$pdb" "$RUNNER_TEMP/out_pdb"
+          ./build/bin/pdbtoolsbase_smoke "$cif" "$RUNNER_TEMP/out_cif"
   docs:
     name: Documentation
     runs-on: ubuntu-latest

@@ -10,6 +10,8 @@ module PDBToolsBase
 import Dates
 import PrecompileTools
 import Printf
+import LazyArtifacts # must be loaded for lazy artifacts
+using LazyArtifacts: @artifact_str
 using LinearAlgebra: eigvecs, norm, cross, dot
 using Printf: @printf, @sprintf
 using StaticArrays: SVector, SMatrix, MMatrix
@@ -67,21 +69,19 @@ public wrap, wrap_to_first
 public align, align!, rmsd, alignment_movements, apply_alignment_transformation!
 public dihedrals
 
-# Test files
+# Test files read by the precompilation workload, which are part of the package
 const src_dir = @__DIR__
-const test_dir = joinpath(src_dir, "../test")
-const TESTPDB = joinpath(src_dir, "../test/structure.pdb")
 const SMALLPDB = joinpath(src_dir, "../test/small.pdb")
 const TESTCIF = joinpath(src_dir, "../test/small.cif")
-const CHAINSPDB = joinpath(src_dir, "../test/chains.pdb")
-const BROKENCIF = joinpath(src_dir, "../test/broken.cif")
-const LONG_CHAIN_STRING_CIF = joinpath(src_dir, "../test/long_chain_string.cif")
-const LONG_NAME_STRING_CIF = joinpath(src_dir, "../test/long_name_string.cif")
-const DIMERPDB = joinpath(src_dir, "../test/dimer.pdb")
-const HETATMPDB = joinpath(src_dir, "../test/hetatm.pdb")
-const CIF_2C_CHAIN = joinpath(src_dir, "../test/6CO8.cif")
-const TESTPBC = joinpath(src_dir, "../test/pbc_protein.pdb")
-const TESTNOPBC = joinpath(src_dir, "../test/no_pbc_protein.pdb")
+
+"""
+    test_file(name::AbstractString)
+
+Returns the path of the test file `name`. The test files are a lazy artifact (see
+https://github.com/m3g/MolSimTestFiles), downloaded on the first call.
+
+"""
+test_file(name::AbstractString) = joinpath(artifact"pdbtools_test_files", name)
 
 # Function that returns true for all atoms: the default selection
 all(atoms) = true

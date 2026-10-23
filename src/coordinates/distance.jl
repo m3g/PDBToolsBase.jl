@@ -134,7 +134,7 @@ end
 
 @testitem "distance/closest" setup = [PublicNames] begin
     using PDBToolsBase
-    atoms = read_pdb(PDBToolsBase.TESTPDB)
+    atoms = read_pdb(PDBToolsBase.test_file("structure.pdb"))
     s = filter(at -> residue(at) == 3, atoms)
     s2 = filter(at -> residue(at) == 5, atoms)
     @test distance(s, s2) ≈ 3.6750402718881863 atol = 1e-3
@@ -262,7 +262,7 @@ end
 
 @testitem "residue_residue_distance" setup = [PublicNames] begin
     using PDBToolsBase
-    ats = read_pdb(PDBToolsBase.TESTPDB, isprotein)
+    ats = read_pdb(PDBToolsBase.test_file("structure.pdb"), isprotein)
     residues = collect(eachresidue(ats))
     r1 = residues[1]
     r10 = residues[10]
@@ -272,9 +272,9 @@ end
     @test d ≈ 5.6703672f0
 
     # Test with a PBC cell (protein broken by the PBCs)
-    pdb_pbc = read_pdb(PDBToolsBase.TESTPBC, isprotein)
-    uc = read_unitcell(PDBToolsBase.TESTPBC)
-    pdb_nopbc = read_pdb(PDBToolsBase.TESTNOPBC, isprotein)
+    pdb_pbc = read_pdb(PDBToolsBase.test_file("pbc_protein.pdb"), isprotein)
+    uc = read_unitcell(PDBToolsBase.test_file("pbc_protein.pdb"))
+    pdb_nopbc = read_pdb(PDBToolsBase.test_file("no_pbc_protein.pdb"), isprotein)
     r_pbc = collect(eachresidue(pdb_pbc))
     r_nopbc = collect(eachresidue(pdb_nopbc))
     for i in eachindex(r_pbc, r_nopbc)

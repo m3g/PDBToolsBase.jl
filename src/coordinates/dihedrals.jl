@@ -23,7 +23,7 @@ dihedral(at1::Atom, at2::Atom, at3::Atom, at4::Atom) =
 
 @testitem "dihedral" setup = [PublicNames] begin
     using PDBToolsBase
-    pdb = read_pdb(PDBToolsBase.TESTPDB);
+    pdb = read_pdb(PDBToolsBase.test_file("structure.pdb"));
     N1 = pdb[1]; CA1 = pdb[5]; C1 = pdb[11]; N2 = pdb[13];
     @test dihedral(N1, CA1, C1, N2) ≈ 64.07296f0
     C1 = pdb[11]; N2 = pdb[13]; CA2 = pdb[15]; C2 = pdb[22];

@@ -149,10 +149,10 @@ julia> remove_custom_elements!(); # if any
 julia> atoms = [ Atom(name="A1"), Atom(name="A2") ];
 
 julia> add_element!("A1", PDBTools.elements["C"])
-PDBTools.Element(:C, InlineStrings.String15("C"), "Carbon", 6, 12.011f0, true, 1.7f0)
+PDBToolsBase.Element(:C, InlineStrings.String15("C"), "Carbon", 6, 12.011f0, true, 1.7f0)
 
 julia> add_element!("A2", PDBTools.elements["N"])
-PDBTools.Element(:N, InlineStrings.String15("N"), "Nitrogen", 7, 14.0067f0, true, 1.55f0)
+PDBToolsBase.Element(:N, InlineStrings.String15("N"), "Nitrogen", 7, 14.0067f0, true, 1.55f0)
 
 julia> element(atoms[1])
 "C"
@@ -207,7 +207,7 @@ julia> using PDBTools
 julia> remove_custom_elements!();
 
 julia> add_element!("GN", PDBTools.elements["N"])
-PDBTools.Element(:N, InlineStrings.String15("N"), "Nitrogen", 7, 14.0067f0, true, 1.55f0)
+PDBToolsBase.Element(:N, InlineStrings.String15("N"), "Nitrogen", 7, 14.0067f0, true, 1.55f0)
 
 julia> element(Atom(name="GN"))
 "N"
@@ -229,7 +229,7 @@ function remove_custom_elements!(elements=PDBToolsBase.elements)
 end
 
 @testitem "elements" setup = [PublicNames] begin
-    atoms = read_pdb(PDBToolsBase.TESTPDB, isprotein)
+    atoms = read_pdb(PDBToolsBase.test_file("structure.pdb"), isprotein)
     @test element.(filter(at -> residue(at) == 1, atoms)) == ["N", "H", "H", "H", "C", "H", "C", "H", "H", "H", "C", "O"]
     @test element_name.(filter(at -> residue(at) == 1, atoms)) == [
         "Nitrogen",

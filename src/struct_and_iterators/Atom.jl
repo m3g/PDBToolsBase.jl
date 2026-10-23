@@ -32,7 +32,7 @@ Fields:
 julia> using PDBTools
 
 julia> atoms = read_pdb(PDBTools.SMALLPDB)
-   Vector{Atom{Nothing}} with 35 atoms with fields:
+   Structure{Atom{Nothing}} with 35 atoms
    index name resname chain   resnum  residue        x        y        z occup  beta model segname index_pdb
        1    N     ALA     A        1        1   -9.229  -14.861   -5.481  0.00  0.00     1    PROT         1
        2 1HT1     ALA     A        1        1  -10.048  -15.427   -5.569  0.00  0.00     1    PROT         2
@@ -539,7 +539,7 @@ get_atoms(atoms::AbstractVector{<:Atom}) = atoms
 
 @testitem "Atom default fields" setup = [PublicNames] begin
     using PDBToolsBase
-    atoms = read_pdb(PDBToolsBase.TESTPDB, at -> isprotein(at) && residue(at) == 2)
+    atoms = read_pdb(PDBToolsBase.test_file("structure.pdb"), at -> isprotein(at) && residue(at) == 2)
     atom = atoms[1]
     @test index(atom) == 13
     @test name(atom) == "N"
@@ -924,7 +924,7 @@ issidechain(atom::Atom; not_side_chain_atoms=not_side_chain_atoms) =
     !(atom.name in not_side_chain_atoms) && isprotein(atom)
 
 @testitem "atoms in struct" setup = [PublicNames] begin
-    pdb = read_pdb(PDBToolsBase.TESTPDB)
+    pdb = read_pdb(PDBToolsBase.test_file("structure.pdb"))
     glu = filter(at -> resname(at) == "GLU", pdb)
     @test isbackbone(glu[1])
     @test !issidechain(glu[1])
@@ -953,7 +953,7 @@ function same_residue(atom1::Atom, atom2::Atom)
 end
 
 @testitem "same_residue" setup = [PublicNames] begin
-    pdb = read_pdb(PDBToolsBase.TESTPDB, isprotein)
+    pdb = read_pdb(PDBToolsBase.test_file("structure.pdb"), isprotein)
     import PDBToolsBase: same_residue
     @test same_residue(pdb[1], pdb[2])
     @test !same_residue(pdb[1], pdb[50])
@@ -1020,7 +1020,7 @@ end
 
 @testitem "get element" setup = [PublicNames] begin
     using PDBToolsBase
-    atoms = read_pdb(PDBToolsBase.TESTPDB, at -> isprotein(at) && residue(at) == 2)
+    atoms = read_pdb(PDBToolsBase.test_file("structure.pdb"), at -> isprotein(at) && residue(at) == 2)
     @test element(atoms[1]) == "N"
     @test element(Atom()) == "X"
     @test element(Atom(pdb_element="")) == "X"
@@ -1198,7 +1198,7 @@ end
     @test element_vdw_radius(at) == 1.55f0
     @test mass(at) == 14.0067f0
     @test mass([at, at]) == 28.0134f0
-    atoms = read_pdb(PDBToolsBase.TESTPDB, isprotein)
+    atoms = read_pdb(PDBToolsBase.test_file("structure.pdb"), isprotein)
     @test mass(atoms) ≈ 11079.704440000156
     @test mass(Atom(name="X")) === nothing
     @test mass(Atom(name=" ")) === nothing

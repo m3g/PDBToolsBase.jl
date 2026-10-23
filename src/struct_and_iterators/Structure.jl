@@ -173,7 +173,7 @@ end
 @testitem "Structure" setup = [PublicNames] begin
     using PDBToolsBase
     using StaticArrays: SMatrix
-    s = Structure(read_pdb(PDBToolsBase.TESTPDB))
+    s = Structure(read_pdb(PDBToolsBase.test_file("structure.pdb")))
     ats = s.atoms
     @test s[1] == ats[1]
     @test s[end] == ats[end]

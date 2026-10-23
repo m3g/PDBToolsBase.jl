@@ -91,7 +91,7 @@ _write_pdb_footer(io::IO, footer::Symbol) = println(io, footer === :auto ? "END"
     pdb2 = read_pdb(append_pdb)
     @test length(eachmodel(pdb2)) == 2
     @test length(pdb2) == 70
-    pdb_with_hetatm = read_pdb(PDBToolsBase.HETATMPDB)
+    pdb_with_hetatm = read_pdb(PDBToolsBase.test_file("hetatm.pdb"))
     @test length(pdb_with_hetatm) == 19
     @test length(eachresidue(pdb_with_hetatm)) == 3
     @test getfield.(pdb_with_hetatm, :flag) == [i < 12 ? 0 : 1 for i in 1:length(pdb_with_hetatm)]

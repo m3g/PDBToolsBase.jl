@@ -48,7 +48,7 @@ function Base.show(io::IO, m::MaxMinCoords)
 end
 
 @testitem "maxmin" setup = [PublicNames] begin
-    atoms = read_pdb(PDBToolsBase.TESTPDB, isprotein)
+    atoms = read_pdb(PDBToolsBase.test_file("structure.pdb"), isprotein)
     m = maxmin(atoms)
     @test m.xmin ≈ [-14.18, -17.561, -15.369] atol = 1e-3
     @test m.xmax ≈ [18.694, 14.182, 15.909] atol = 1e-3

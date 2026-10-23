@@ -168,7 +168,7 @@ get_atoms(model::Model) = @view(model.atoms[model.range])
 #
 @testitem "Model iterator" setup = [PublicNames] begin
     using PDBToolsBase
-    atoms = read_pdb(joinpath(PDBToolsBase.test_dir, "8S8N.cif"))
+    atoms = read_pdb(PDBToolsBase.test_file("8S8N.cif"))
     models = eachmodel(atoms)
     @test length(models) == 11
     @test firstindex(models) == 1
@@ -224,7 +224,7 @@ end
     using ShowMethodTesting
     ENV["LINES"] = 10
     ENV["COLUMNS"] = 120
-    ats = read_pdb(joinpath(PDBToolsBase.test_dir, "8S8N.cif"))
+    ats = read_pdb(PDBToolsBase.test_file("8S8N.cif"))
     m = eachmodel(ats)
     @test parse_show(m; repl=Dict("PDBToolsBase." => "")) ≈ "Model iterator with length = 11"
     mc = collect(m)

@@ -26,7 +26,7 @@ When reading an mmCIF file, the following keyword arguments are forwarded to the
 julia> using PDBTools
 
 julia> protein = read_pdb(PDBTools.TESTPDB)
-   Vector{Atom{Nothing}} with 62026 atoms with fields:
+   Structure{Atom{Nothing}} with 62026 atoms
    index name resname chain   resnum  residue        x        y        z occup  beta model segname index_pdb
        1    N     ALA     A        1        1   -9.229  -14.861   -5.481  0.00  0.00     1    PROT         1
        2  HT1     ALA     A        1        1  -10.048  -15.427   -5.569  0.00  0.00     1    PROT         2
@@ -35,7 +35,7 @@ julia> protein = read_pdb(PDBTools.TESTPDB)
    62026   H2    TIP3     C     9339    19638   12.618   -4.977  -34.303  1.00  0.00     1    WAT2     62026
 
 julia> ALA = read_pdb(PDBTools.TESTPDB,"resname ALA")
-   Vector{Atom{Nothing}} with 72 atoms with fields:
+   Structure{Atom{Nothing}} with 72 atoms
    index name resname chain   resnum  residue        x        y        z occup  beta model segname index_pdb
        1    N     ALA     A        1        1   -9.229  -14.861   -5.481  0.00  0.00     1    PROT         1
        2  HT1     ALA     A        1        1  -10.048  -15.427   -5.569  0.00  0.00     1    PROT         2
@@ -44,7 +44,7 @@ julia> ALA = read_pdb(PDBTools.TESTPDB,"resname ALA")
     1340    O     ALA     A       95       95   14.862   -2.204   -6.518  1.00  0.00     1    PROT      1340
 
 julia> ALA = read_pdb(PDBTools.TESTPDB, atom -> atom.resname == "ALA")
-   Vector{Atom{Nothing}} with 72 atoms with fields:
+   Structure{Atom{Nothing}} with 72 atoms
    index name resname chain   resnum  residue        x        y        z occup  beta model segname index_pdb
        1    N     ALA     A        1        1   -9.229  -14.861   -5.481  0.00  0.00     1    PROT         1
        2  HT1     ALA     A        1        1  -10.048  -15.427   -5.569  0.00  0.00     1    PROT         2
@@ -171,7 +171,7 @@ function read_atom_pdb(record::AbstractString, lastatom::Atom=Atom{Nothing}(), i
 end
 
 @testitem "read_pdb" setup = [PublicNames] begin
-    pdb_file = PDBToolsBase.TESTPDB
+    pdb_file = PDBToolsBase.test_file("structure.pdb")
     pdbdata = read(pdb_file, String)
     atoms = read_pdb(IOBuffer(pdbdata), at -> isprotein(at) && name(at) == "CA")
     @test length(atoms) == 104
@@ -254,7 +254,7 @@ end
 end
 
 @testitem "abstract string" setup = [PublicNames] begin
-    file = PDBToolsBase.TESTPDB * "abc"
+    file = PDBToolsBase.test_file("structure.pdb") * "abc"
     s = read_pdb(@view(file[1:end-3]))
     @test length(s) == 62026
     tmpfile = tempname()
@@ -263,8 +263,8 @@ end
 end
 
 @testitem "switch to mmCIF" setup = [PublicNames] begin
-    p1 = read_mmcif(PDBToolsBase.CIF_2C_CHAIN)
-    p2 = read_pdb(PDBToolsBase.CIF_2C_CHAIN)
+    p1 = read_mmcif(PDBToolsBase.test_file("6CO8.cif"))
+    p2 = read_pdb(PDBToolsBase.test_file("6CO8.cif"))
     @test p1 == p2
 
     p1 = read_mmcif(PDBToolsBase.TESTCIF)
@@ -275,30 +275,30 @@ end
 @testitem "read Structure and unit cell" setup = [PublicNames] begin
     using PDBToolsBase
     # PDB file with CRYST1 field
-    s = read_pdb(PDBToolsBase.TESTPBC)
+    s = read_pdb(PDBToolsBase.test_file("pbc_protein.pdb"))
     @test s isa Structure{Atom{Nothing}}
     @test s.unitcell isa UnitCell
-    @test s.unitcell ≈ read_unitcell(PDBToolsBase.TESTPBC)
-    @test read_pdb(IOBuffer(read(PDBToolsBase.TESTPBC, String))).unitcell == s.unitcell
-    @test read_pdb(PDBToolsBase.TESTPBC, isprotein).unitcell == s.unitcell
+    @test s.unitcell ≈ read_unitcell(PDBToolsBase.test_file("pbc_protein.pdb"))
+    @test read_pdb(IOBuffer(read(PDBToolsBase.test_file("pbc_protein.pdb"), String))).unitcell == s.unitcell
+    @test read_pdb(PDBToolsBase.test_file("pbc_protein.pdb"), isprotein).unitcell == s.unitcell
     # mmCIF files with _cell fields
     s = read_mmcif(PDBToolsBase.TESTCIF)
     @test s isa Structure{Atom{Nothing}}
     @test s.unitcell ≈ read_unitcell(PDBToolsBase.TESTCIF)
     @test read_pdb(PDBToolsBase.TESTCIF).unitcell == s.unitcell
     @test read_mmcif(IOBuffer(read(PDBToolsBase.TESTCIF, String))).unitcell == s.unitcell
-    lbd = joinpath(PDBToolsBase.test_dir, "1LBD.cif")
+    lbd = PDBToolsBase.test_file("1LBD.cif")
     @test matrix_to_lattice(read_mmcif(lbd).unitcell).γ ≈ 120
     # files without unit cell
     @test isnothing(read_pdb(PDBToolsBase.SMALLPDB).unitcell)
-    @test isnothing(read_mmcif(PDBToolsBase.CIF_2C_CHAIN).unitcell)
+    @test isnothing(read_mmcif(PDBToolsBase.test_file("6CO8.cif")).unitcell)
     # the 1Å cube indicates a non-crystallographic structure (here, cryo-EM)
-    em = joinpath(PDBToolsBase.test_dir, "7YWH.cif")
+    em = PDBToolsBase.test_file("7YWH.cif")
     @test read_unitcell(em) ≈ lattice_to_matrix(1.0, 1.0, 1.0, 90.0, 90.0, 90.0)
     @test isnothing(read_mmcif(em).unitcell)
     # round trip
     tmp = tempname()
-    s = read_pdb(PDBToolsBase.TESTPBC)
+    s = read_pdb(PDBToolsBase.test_file("pbc_protein.pdb"))
     write_pdb(tmp * ".pdb", s)
     @test read_pdb(tmp * ".pdb").unitcell ≈ s.unitcell
     write_mmcif(tmp * ".cif", s)

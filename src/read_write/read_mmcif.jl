@@ -46,7 +46,7 @@ Source: https://mmcif.wwpdb.org/docs/tutorials/content/atomic-description.html
 julia> using PDBTools
 
 julia> ats = read_mmcif(PDBTools.TESTCIF)
-   Vector{Atom{Nothing}} with 76 atoms with fields:
+   Structure{Atom{Nothing}} with 76 atoms - with unit cell
    index name resname chain   resnum  residue        x        y        z occup  beta model segname index_pdb
        1    N     GLY     A        1        1   -4.564   25.503   24.113  1.00 24.33     1                 1
        2   CA     GLY     A        1        1   -4.990   26.813   24.706  1.00 24.29     1                 2
@@ -55,13 +55,13 @@ julia> ats = read_mmcif(PDBTools.TESTCIF)
       76    O     HOH     Q       64       16   -4.799   40.689   37.419  1.00 20.13     1              2981
 
 julia> ats = read_mmcif(PDBTools.TESTCIF, "index < 3")
-   Vector{Atom{Nothing}} with 2 atoms with fields:
+   Structure{Atom{Nothing}} with 2 atoms - with unit cell
    index name resname chain   resnum  residue        x        y        z occup  beta model segname index_pdb
        1    N     GLY     A        1        1   -4.564   25.503   24.113  1.00 24.33     1                 1
        2   CA     GLY     A        1        1   -4.990   26.813   24.706  1.00 24.29     1                 2
 
 julia> ats = read_mmcif(PDBTools.TESTCIF, at -> name(at) == "CA")
-   Vector{Atom{Nothing}} with 11 atoms with fields:
+   Structure{Atom{Nothing}} with 11 atoms - with unit cell
    index name resname chain   resnum  residue        x        y        z occup  beta model segname index_pdb
        2   CA     GLY     A        1        1   -4.990   26.813   24.706  1.00 24.29     1                 2
        6   CA     GLN     A        2        2   -4.738   30.402   23.484  1.00 23.74     1                 6
@@ -231,10 +231,10 @@ end
     @test_throws ArgumentError PDBToolsBase._supported_read_cif_fields(field_assignment)
     field_assignment = Dict("type_symbol" => :custom)
     @test_throws ArgumentError PDBToolsBase._supported_read_cif_fields(field_assignment)
-    @test length(read_mmcif(PDBToolsBase.LONG_CHAIN_STRING_CIF)) == 8
-    @test length(read_mmcif(PDBToolsBase.LONG_NAME_STRING_CIF)) == 1
-    @test length(read_pdb(PDBToolsBase.LONG_CHAIN_STRING_CIF)) == 8
-    @test length(read_pdb(PDBToolsBase.LONG_NAME_STRING_CIF)) == 1
+    @test length(read_mmcif(PDBToolsBase.test_file("long_chain_string.cif"))) == 8
+    @test length(read_mmcif(PDBToolsBase.test_file("long_name_string.cif"))) == 1
+    @test length(read_pdb(PDBToolsBase.test_file("long_chain_string.cif"))) == 8
+    @test length(read_pdb(PDBToolsBase.test_file("long_name_string.cif"))) == 1
 end
 
 function _new_cif_token(line)
@@ -421,6 +421,6 @@ end
     @test resnum.(filter(iswater, ats1)) == Int32[0, 0, 0, 0, 0]
 
     # Throw error if no ATOM fields were found
-    @test_throws "no ATOM or HETATM fields" read_mmcif(PDBToolsBase.BROKENCIF)
-    @test_throws "no ATOM or HETATM fields" read_pdb(PDBToolsBase.BROKENCIF)
+    @test_throws "no ATOM or HETATM fields" read_mmcif(PDBToolsBase.test_file("broken.cif"))
+    @test_throws "no ATOM or HETATM fields" read_pdb(PDBToolsBase.test_file("broken.cif"))
 end

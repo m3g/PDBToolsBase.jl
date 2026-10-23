@@ -428,7 +428,7 @@ end
 
 @testitem "Residue iterator" setup = [PublicNames] begin
     using PDBToolsBase
-    atoms = read_pdb(PDBToolsBase.TESTPDB, isprotein)
+    atoms = read_pdb(PDBToolsBase.test_file("structure.pdb"), isprotein)
     residues = eachresidue(atoms)
     @test length(residues) == 104
     @test name(Residue(atoms, 1:12)) == "ALA"
@@ -646,7 +646,7 @@ Returns `true` if the atom belongs to, or the residue is, a pyrimidine nucleosid
 """ ispyrimidine
 
 @testitem "residue of atom" setup = [PublicNames] begin
-    pdb = read_pdb(PDBToolsBase.TESTPDB)
+    pdb = read_pdb(PDBToolsBase.test_file("structure.pdb"))
     glu = filter(at -> resname(at) == "GLU", pdb)
     @test isacidic(glu[1])
     @test !isaliphatic(glu[1])
@@ -677,7 +677,7 @@ Returns `true` if the atom belongs to, or the residue is, a pyrimidine nucleosid
 end
 
 @testitem "full residue" setup = [PublicNames] begin
-    pdb = read_pdb(PDBToolsBase.TESTPDB)
+    pdb = read_pdb(PDBToolsBase.test_file("structure.pdb"))
     glu_atoms = filter(at -> resname(at) == "GLU", pdb)
     glu = collect(eachresidue(glu_atoms))
     @test charge(glu[1]) == -1
