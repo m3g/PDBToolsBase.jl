@@ -1,4 +1,4 @@
-# PDBToolsBase
+# PDBToolsBase.jl
 
 > [!IMPORTANT]
 > This is an infrastructure package. **If you want to read, write or analyze molecular
