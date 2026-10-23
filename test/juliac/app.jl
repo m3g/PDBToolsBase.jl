@@ -3,7 +3,7 @@
 #
 #   JULIA_APPS_JULIA_CMD=$(which julia) juliac --output-exe pdbtoolsbase_smoke --project . \
 #       --experimental --trim=safe --bundle build app.jl
-#   pdb=$(julia --project=. -e 'import PDBToolsBase; print(PDBToolsBase.test_file("structure.pdb"))')
+#   pdb=$(julia --project=. -e 'using LazyArtifacts, PDBToolsBase; print(PDBToolsBase.test_file("structure.pdb"))')
 #   ./build/bin/pdbtoolsbase_smoke "$pdb" output
 #
 # (Julia 1.13+). Printing uses `Core.stdout`, because `stdout` is not initialized in

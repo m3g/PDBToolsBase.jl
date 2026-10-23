@@ -12,6 +12,7 @@ PDBToolsBase.jl Changelog
 
 Version 1.0.1-DEV
 -------------
+- ![ENHANCEMENT][badge-enhancement] LazyArtifacts is no longer a dependency: the internal `PDBToolsBase.test_file(name)` is defined in a package extension, available after `using LazyArtifacts`, so neither LazyArtifacts nor Pkg are loaded with the package.
 
 Version 1.0.0
 -------------

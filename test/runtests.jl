@@ -20,6 +20,7 @@ end
 # PDBToolsBase exports nothing: this snippet brings its public names into the scope
 # of the test items
 @testsnippet PublicNames begin
+    using LazyArtifacts # loads the extension that defines test_file
     for n in names(PDBToolsBase)
         n == :PDBToolsBase || @eval using PDBToolsBase: $n
     end
