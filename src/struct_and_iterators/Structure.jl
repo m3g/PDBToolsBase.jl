@@ -14,7 +14,8 @@ of the structure (e.g. `s.unitcell`), and can be set in the `Structure` construc
   `connectivity[i]` contains the indices of the atoms bonded to the atom with index `i`. 
   The indices are the sequential indices of the atoms in the file (`index(atom)`, which are 
   not changed by selections or filtering). The bonds of PDB files are listed as in the file
-  (they are not symmetrized). `nothing` if the connectivity is not available. When setting it,
+  (they are not symmetrized), and repeated bonds, which indicate the bond order in PDB files
+  (e.g. a double bond is listed twice), are kept. `nothing` if the connectivity is not available. When setting it,
   vectors of vectors of integers are converted to `Vector{Vector{Int32}}`.
 - `title::Union{Nothing,String}`: The title of the structure, as read from the `TITLE`
   records of PDB files, the `_struct.title` field of mmCIF files, or the comment line of
