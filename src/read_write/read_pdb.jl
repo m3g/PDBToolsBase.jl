@@ -175,7 +175,8 @@ end
 # `connectivity[i]` contains the indices of the atoms bonded to atom `i`, where the indices
 # are the sequential indices of the atoms in the file. Serial numbers are mapped to the first
 # atom with that serial number (that is, to the atoms of the first model, in PDB files with 
-# multiple models).
+# multiple models). Repeated bonds are kept: in PDB files, they indicate the bond order 
+# (e.g. a double bond is listed twice).
 function _connectivity_from_records(records::Vector{Vector{Int32}}, serials::Vector{Int32})
     isempty(records) && return nothing
     atom_index = Dict{Int32,Int}()
@@ -197,7 +198,7 @@ function _connectivity_from_records(records::Vector{Vector{Int32}}, serials::Vec
                 nmissing += 1
                 continue
             end
-            j in connectivity[i] || push!(connectivity[i], j)
+            push!(connectivity[i], j)
         end
     end
     if nmissing > 0
@@ -416,4 +417,26 @@ end
     # CONECT records referencing missing atoms
     c = @test_logs (:warn, r"1 atom serial numbers") PDBToolsBase._connectivity_from_records([Int32[1, 2, 3]], Int32[1, 2])
     @test c == [[2], Int32[]]
+    # Repeated bonds (bond orders) are kept, and written back
+    pdb = """
+    HETATM    1  C1  BEN A   1       0.000   1.400   0.000  1.00  0.00           C
+    HETATM    2  C2  BEN A   1       1.212   0.700   0.000  1.00  0.00           C
+    HETATM    3  H1  BEN A   1       0.000   2.480   0.000  1.00  0.00           H
+    CONECT    1    2    3
+    CONECT    1    2
+    CONECT    2    1
+    CONECT    2    1
+    CONECT    3    1
+    END
+    """
+    s = read_pdb(IOBuffer(pdb))
+    @test s.connectivity == [[2, 3, 2], [1, 1], [1]]
+    tmpfile = tempname() * ".pdb"
+    write_pdb(tmpfile, s)
+    @test filter(startswith("CONECT"), readlines(tmpfile)) ==
+          ["CONECT    1    2    3    2", "CONECT    2    1    1", "CONECT    3    1"]
+    @test read_pdb(tmpfile).connectivity == s.connectivity
+    tmpfile = tempname() * ".cif"
+    write_mmcif(tmpfile, s)
+    @test sort.(read_mmcif(tmpfile).connectivity) == sort.(s.connectivity)
 end

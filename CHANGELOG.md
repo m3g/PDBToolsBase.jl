@@ -10,6 +10,10 @@ PDBToolsBase.jl Changelog
 [badge-fix]: https://img.shields.io/badge/Fix-purple.svg
 [badge-info]: https://img.shields.io/badge/Info-gray.svg
 
+Version 1.1.1-DEV
+-------------
+- ![FIX][badge-fix] Repeated bonds of the `CONECT` records of PDB files are kept in the connectivity, as they indicate the bond order (e.g. a double bond is listed twice). They were removed, so that the bond orders were lost when writing the structure.
+
 Version 1.1.0
 -------------
 - ![FEATURE][badge-feature] `read_xyz` and `write_xyz` read and write files in the xyz format. Multiple frames are read as, and written from, different models.
