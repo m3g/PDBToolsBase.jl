@@ -110,12 +110,23 @@ end
 end
 
 """
-    write_mmcif(filename, atoms::AbstractVector{<:Atom}, [selection]; field_assignment=nothing)
+    write_mmcif(filename, atoms::AbstractVector{<:Atom}, [selection]; field_assignment=nothing, connectivity=true)
 
 Write a mmCIF file with the atoms in `atoms` to `filename`. The optional `selection` argument is a string or function
 that can be used to select a subset of the atoms in `atoms`. For example, `write_mmcif("test.cif", atoms, "name CA")`.
 
 The optional `field_assignment` argument is a dictionary that can be used to assign custom fields to the mmCIF file.
+
+If `connectivity=false`, the connectivity of the structure (`_geom_bond` fields) is not written.
+
+If `atoms` is a `Structure`, its metadata is written to the file: the unit cell in the `_cell` 
+fields, the title in the `_struct.title` field, and the connectivity in the `_geom_bond` 
+fields, which list each bond once, by the `_atom_site.id` of the two atoms. The atoms are 
+numbered sequentially in the file (`_atom_site.id` = 1, 2, ...), and the connectivity, which 
+refers to the indices of the atoms (`index(atom)`), is converted to these numbers. Bonds to 
+atoms that are not written (because of the selection) are not written. An error is thrown 
+if two atoms to be written have the same index, because the bonds of these atoms would be
+ambiguous: in this case, use `connectivity=false` to write the file without the connectivity.
 
 """
 function write_mmcif(
@@ -123,8 +134,12 @@ function write_mmcif(
     atoms::AbstractVector{<:Atom},
     selection_function::F=all;
     field_assignment::Union{Nothing,Dict{String,Symbol}}=nothing,
+    connectivity::Bool=true,
 ) where {F<:Function}
     _cif_fields = _supported_write_cif_fields(field_assignment)
+    bonds = connectivity ? _connectivity(atoms) : nothing
+    # _atom_site.id of the atoms, by their indices (0 for atoms not written)
+    atom_site_id = _written_serials(bonds, atoms, selection_function)
     open(expanduser(filename), "w") do file
         # Data block header
         println(file, "data_MODEL")
@@ -135,6 +150,7 @@ function write_mmcif(
         println(file, "_audit_conform.dict_version    5.397")
         println(file, "_audit_conform.dict_location   http://mmcif.pdb.org/dictionaries/ascii/mmcif_pdbx.dic")
         println(file, "#")
+        _write_mmcif_title(file, _title(atoms))
         _write_mmcif_cell(file, _unitcell(atoms))
         # Collect chain→entity_id (unique per chain) and unique (chain, resnum) pairs
         chain_entity = OrderedDict{String,Int}()
@@ -216,7 +232,46 @@ function write_mmcif(
             println(file, String(take!(buff)))
         end
         println(file, "#")
+        _write_mmcif_geom_bond(file, bonds, atom_site_id)
     end
+end
+
+_write_mmcif_title(::IO, ::Nothing) = nothing
+function _write_mmcif_title(io::IO, title::String)
+    println(io, "_struct.entry_id MODEL")
+    if !occursin('\'', title)
+        println(io, "_struct.title '" * title * "'")
+    elseif !occursin('"', title)
+        println(io, "_struct.title \"" * title * "\"")
+    else # text field
+        println(io, "_struct.title")
+        println(io, ";" * title)
+        println(io, ";")
+    end
+    println(io, "#")
+end
+
+# Each bond is written once: the bond i-j is written for i < j, or for i > j if the 
+# connectivity of j does not contain i
+_write_mmcif_geom_bond(::IO, ::Nothing, atom_site_id) = nothing
+function _write_mmcif_geom_bond(io::IO, connectivity::Vector{Vector{Int32}}, atom_site_id::Vector{Int32})
+    header = false
+    for (i, bonds) in pairs(connectivity)
+        atom_site_id[i] == 0 && continue
+        for j in bonds
+            (1 <= j <= length(connectivity) && atom_site_id[j] != 0) || continue
+            (i < j || !(i in connectivity[j])) || continue
+            if !header
+                println(io, "loop_")
+                println(io, "_geom_bond.atom_site_id_1")
+                println(io, "_geom_bond.atom_site_id_2")
+                header = true
+            end
+            println(io, string(atom_site_id[i]) * " " * string(atom_site_id[j]))
+        end
+    end
+    header && println(io, "#")
+    return nothing
 end
 
 @testitem "write_mmcif" setup = [PublicNames] begin
@@ -256,4 +311,43 @@ end
     write_mmcif(tmpfile, Structure(ats))
     @test_throws ArgumentError read_unitcell(tmpfile)
 
+end
+
+@testitem "write_mmcif - connectivity and title" setup = [PublicNames] begin
+    using PDBToolsBase
+    file = joinpath(pkgdir(PDBToolsBase), "test", "ethanol.pdb")
+    s = read_pdb(file)
+    tmpfile = tempname() * ".cif"
+    write_mmcif(tmpfile, s)
+    lines = readlines(tmpfile)
+    @test "_struct.title 'ETHANOL MOLECULE WITH EXPLICIT HYDROGENS'" in lines
+    ibond = findfirst(==("_geom_bond.atom_site_id_2"), lines)
+    @test lines[ibond+1:ibond+9] == ["1 2", "1 4", "1 5", "1 6", "2 3", "2 7", "2 8", "3 9", "#"]
+    s2 = read_mmcif(tmpfile)
+    @test s2.title == s.title
+    @test s2.connectivity == s.connectivity
+    @test read_pdb(tmpfile).connectivity == s.connectivity
+    # selection: the atoms are renumbered in the file
+    write_mmcif(tmpfile, s, at -> name(at) in ("C2", "O1", "H6"))
+    lines = readlines(tmpfile)
+    ibond = findfirst(==("_geom_bond.atom_site_id_2"), lines)
+    @test lines[ibond+1:ibond+3] == ["1 2", "2 3", "#"]
+    s2 = read_mmcif(tmpfile)
+    @test s2.connectivity == [[2], [1, 3], [2]]
+    # bonds listed in one direction only
+    s.connectivity = [[2], Int32[], [2]]
+    write_mmcif(tmpfile, s)
+    lines = readlines(tmpfile)
+    ibond = findfirst(==("_geom_bond.atom_site_id_2"), lines)
+    @test lines[ibond+1:ibond+3] == ["1 2", "3 2", "#"]
+    @test read_mmcif(tmpfile).connectivity[1:3] == [[2], [1, 3], [2]]
+    # titles with quotes
+    for title in ("it's a title", "it's a \"title\"", "a \"title\"")
+        write_mmcif(tmpfile, Structure(s.atoms; title))
+        @test read_mmcif(tmpfile).title == title
+    end
+    # no metadata
+    write_mmcif(tmpfile, s.atoms)
+    s2 = read_mmcif(tmpfile)
+    @test isnothing(s2.title) && isnothing(s2.connectivity)
 end

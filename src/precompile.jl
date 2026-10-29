@@ -34,6 +34,7 @@ PrecompileTools.@setup_workload begin
         wrap_to_first(x32, uc64)
         # Structures and IO
         ats = read_mmcif(PDBToolsBase.TESTCIF)
+        ats = read_xyz(PDBToolsBase.SMALLXYZ)
         ats = read_pdb(PDBToolsBase.SMALLPDB)
         positions(ats)
         center_of_mass(ats)
@@ -43,6 +44,7 @@ PrecompileTools.@setup_workload begin
         eachmodel(ats)
         write_pdb(tempname(), ats)
         write_mmcif(tempname(), ats)
+        write_xyz(tempname(), ats)
         moveto!(ats; center=[0.0, 0.0, 0.0])
     end
 end

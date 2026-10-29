@@ -29,7 +29,7 @@ change in any release.
       `resnum`, `residue`, `x`, `y`, `z`, `beta`, `occup`, `model`, `segname`, 
       `pdb_element`, `charge`, and `custom` (see [`add_custom_field`](@ref)).
     - The properties of [`Structure`](@ref): `atoms`, `metadata`, and the fields of 
-      [`PDBToolsBase.MetaData`](@ref) (currently, `unitcell`).
+      [`PDBToolsBase.MetaData`](@ref) (currently, `unitcell`, `connectivity`, and `title`).
     - The `matrix` field of [`UnitCell`](@ref).
     - The fields of [`PDBToolsBase.Element`](@ref), [`PDBToolsBase.ProteinResidue`](@ref), and
       [`PDBToolsBase.NucleosideResidue`](@ref).
@@ -38,7 +38,11 @@ change in any release.
     - [`read_pdb`](@ref) and [`read_mmcif`](@ref) return a `Structure`, with the unit cell
       read from the file (`CRYST1` or `_cell` fields), or `nothing` if the file does not 
       define a unit cell or defines the 1Å unit cube (which indicates a non-crystallographic
-      structure).
+      structure). The `title` is read from the `TITLE` (PDB) or `_struct.title` (mmCIF)
+      fields, and the `connectivity` from the `CONECT` records of PDB files or the 
+      `_geom_bond` fields of mmCIF files.
+    - [`read_xyz`](@ref) returns a `Structure` with the atoms of the xyz file, with the 
+      `title` read from the comment line.
     - Selections are functions that receive an `Atom` and return `true` or `false` (e.g. 
       `isprotein`, or `at -> name(at) == "CA"`). Selections given as strings 
       (`"protein and name CA"`) are provided by PDBTools.jl.
@@ -51,7 +55,9 @@ change in any release.
       `Structure` that shares the atoms and the metadata with the original one. When 
       structures are concatenated, metadata that differs between them is set to `nothing`.
     - The files written by [`write_pdb`](@ref) and [`write_mmcif`](@ref) follow the PDB and
-      PDBx/mmCIF formats, including the unit cell of `Structure`s.
+      PDBx/mmCIF formats, including the unit cell, title, and connectivity of `Structure`s
+      (`CRYST1`, `TITLE` and `CONECT` records in PDB files; `_cell`, `_struct.title` and 
+      `_geom_bond` fields in mmCIF files). [`write_xyz`](@ref) writes files in the xyz format.
     - The core API (reading, writing, and manipulating structures) can be compiled into 
       executables with `juliac --trim=safe` (Julia ≥ 1.13).
 
@@ -91,8 +97,10 @@ Sequence
 ```@docs
 read_pdb
 read_mmcif
+read_xyz
 write_pdb
 write_mmcif
+write_xyz
 ```
 
 ## Atom properties

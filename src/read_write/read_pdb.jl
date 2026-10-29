@@ -104,6 +104,10 @@ function _parse_pdb(pdbdata::Union{IOStream,IOBuffer}, selection_function::F) wh
     atoms = Atom{Nothing}[]
     lastatom = Atom{Nothing}()
     lattice = _empty_lattice
+    title = ""
+    # Serial numbers of all atoms in the file (selected or not), and the CONECT records
+    serials = Int32[]
+    conect = Vector{Int32}[]
     for line in eachline(pdbdata)
         if occursin("END", line)
             imodel = imodel + 1
@@ -112,9 +116,16 @@ function _parse_pdb(pdbdata::Union{IOStream,IOBuffer}, selection_function::F) wh
         if startswith(line, "CRYST1") && !_is_complete(lattice)
             lattice = _read_lattice_line(lattice, line)
         end
+        if startswith(line, "TITLE ")
+            title = _read_title_line(title, line)
+        end
+        if startswith(line, "CONECT")
+            push!(conect, _read_conect_line(line))
+        end
         if startswith(line, r"ATOM|HETATM")
             atom = read_atom_pdb(line, lastatom, imodel)
             atom.model = imodel
+            push!(serials, index_pdb(atom))
             selection_function(atom) && push!(atoms, atom)
             lastatom = atom
         end
@@ -126,7 +137,73 @@ function _parse_pdb(pdbdata::Union{IOStream,IOBuffer}, selection_function::F) wh
 
         """))
     end
-    return Structure(atoms, MetaData(_structure_unitcell(lattice)))
+    metadata = MetaData(
+        _structure_unitcell(lattice),
+        _connectivity_from_records(conect, serials),
+        isempty(title) ? nothing : title,
+    )
+    return Structure(atoms, metadata)
+end
+
+# TITLE records: the title is in columns 11-80, and continuation lines have the
+# continuation number in columns 9-10
+function _read_title_line(title::String, line::AbstractString)
+    length(line) < 11 && return title
+    t = strip(@view(line[11:end]))
+    isempty(t) && return title
+    return isempty(title) ? String(t) : title * " " * t
+end
+
+# CONECT records: serial number of the atom (columns 7-11), followed by the serial numbers
+# of the bonded atoms (columns 12-16, 17-21, 22-26, 27-31, ...). The first element of the 
+# returned vector is the serial number of the atom.
+function _read_conect_line(line::AbstractString)
+    record = Int32[]
+    for i in 7:5:length(line)
+        field = strip(@view(line[i:min(i + 4, lastindex(line))]))
+        isempty(field) && continue
+        serial = _tryparse(Int32, field)
+        isnothing(serial) && break
+        push!(record, serial)
+    end
+    return record
+end
+
+# Connectivity of the atoms, from bond records (CONECT records of PDB files, or bonds of the
+# _geom_bond fields of mmCIF files), where the first element of each record is the serial 
+# number of an atom, and the others are the serial numbers of the atoms bonded to it.
+# `connectivity[i]` contains the indices of the atoms bonded to atom `i`, where the indices
+# are the sequential indices of the atoms in the file. Serial numbers are mapped to the first
+# atom with that serial number (that is, to the atoms of the first model, in PDB files with 
+# multiple models).
+function _connectivity_from_records(records::Vector{Vector{Int32}}, serials::Vector{Int32})
+    isempty(records) && return nothing
+    atom_index = Dict{Int32,Int}()
+    for (i, serial) in pairs(serials)
+        haskey(atom_index, serial) || (atom_index[serial] = i)
+    end
+    connectivity = [Int32[] for _ in eachindex(serials)]
+    nmissing = 0
+    for record in records
+        length(record) < 2 && continue
+        i = get(atom_index, record[1], 0)
+        if i == 0
+            nmissing += 1
+            continue
+        end
+        for serial in @view(record[2:end])
+            j = get(atom_index, serial, 0)
+            if j == 0
+                nmissing += 1
+                continue
+            end
+            j in connectivity[i] || push!(connectivity[i], j)
+        end
+    end
+    if nmissing > 0
+        @warn "$nmissing atom serial numbers of bond records were not found in the atom records, and were ignored." _file = nothing _line = nothing
+    end
+    return connectivity
 end
 
 # read atom from PDB file
@@ -303,4 +380,40 @@ end
     @test read_pdb(tmp * ".pdb").unitcell ≈ s.unitcell
     write_mmcif(tmp * ".cif", s)
     @test read_mmcif(tmp * ".cif").unitcell ≈ s.unitcell
+end
+
+@testitem "read_pdb - connectivity and title" setup = [PublicNames] begin
+    using PDBToolsBase
+    file = joinpath(pkgdir(PDBToolsBase), "test", "ethanol.pdb")
+    s = read_pdb(file)
+    @test length(s) == 9
+    @test s.title == "ETHANOL MOLECULE WITH EXPLICIT HYDROGENS"
+    @test length(s.connectivity) == 9
+    @test s.connectivity isa Vector{Vector{Int32}}
+    @test s.connectivity[1] == [2, 4, 5, 6]
+    @test s.connectivity[2] == [1, 3, 7, 8]
+    @test s.connectivity[3] == [2, 9]
+    @test s.connectivity[4] == [1]
+    @test s.connectivity[9] == [3]
+    @test read_pdb(IOBuffer(read(file, String))).connectivity == s.connectivity
+    # selections do not change the indices of the connectivity
+    sel = read_pdb(file, at -> element(at) != "H")
+    @test length(sel) == 3
+    @test sel.connectivity == s.connectivity
+    @test sel.connectivity[index(sel[3])] == [2, 9]
+    # files without CONECT and TITLE records
+    s = read_pdb(PDBToolsBase.SMALLPDB)
+    @test isnothing(s.connectivity)
+    @test isnothing(s.title)
+    # unit tests of the parsers
+    @test PDBToolsBase._read_conect_line("CONECT    1    2    4    5    6") == Int32[1, 2, 4, 5, 6]
+    @test PDBToolsBase._read_conect_line("CONECT    1    2") == Int32[1, 2]
+    @test PDBToolsBase._read_conect_line("CONECT") == Int32[]
+    @test PDBToolsBase._read_title_line("", "TITLE     ABC") == "ABC"
+    @test PDBToolsBase._read_title_line("ABC", "TITLE    2 DEF  ") == "ABC DEF"
+    @test PDBToolsBase._read_title_line("ABC", "TITLE") == "ABC"
+    @test PDBToolsBase._connectivity_from_records(Vector{Int32}[], Int32[1, 2]) === nothing
+    # CONECT records referencing missing atoms
+    c = @test_logs (:warn, r"1 atom serial numbers") PDBToolsBase._connectivity_from_records([Int32[1, 2, 3]], Int32[1, 2])
+    @test c == [[2], Int32[]]
 end
