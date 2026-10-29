@@ -232,7 +232,7 @@ end
 
 @testitem "write_pdb - connectivity and title" setup = [PublicNames] begin
     using PDBToolsBase
-    file = joinpath(pkgdir(PDBToolsBase), "test", "ethanol.pdb")
+    file = PDBToolsBase.test_file("ethanol.pdb")
     s = read_pdb(file)
     tmpfile = tempname() * ".pdb"
     write_pdb(tmpfile, s)

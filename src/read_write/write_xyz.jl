@@ -58,7 +58,7 @@ end
 
 @testitem "write_xyz" setup = [PublicNames] begin
     using PDBToolsBase
-    s = read_xyz(PDBToolsBase.SMALLXYZ)
+    s = read_xyz(PDBToolsBase.test_file("ethanol.xyz"))
     tmpfile = tempname() * ".xyz"
     write_xyz(tmpfile, s)
     lines = readlines(tmpfile)
@@ -68,14 +68,14 @@ end
     @test s2 == s
     @test s2.title == "Ethanol"
     # from a PDB file, with selection
-    pdb = read_pdb(joinpath(pkgdir(PDBToolsBase), "test", "ethanol.pdb"))
+    pdb = read_pdb(PDBToolsBase.test_file("ethanol.pdb"))
     write_xyz(tmpfile, pdb, at -> element(at) != "H")
     s2 = read_xyz(tmpfile)
     @test s2.title == pdb.title
     @test name.(s2) == ["C1", "C2", "O1"]
     @test positions(s2) == positions(pdb)[1:3]
     # multiple models are written as frames, and append
-    s = read_xyz(PDBToolsBase.SMALLXYZ)
+    s = read_xyz(PDBToolsBase.test_file("ethanol.xyz"))
     s2 = Structure(vcat(s.atoms, copy.(s.atoms)))
     for at in s2[10:18]
         at.model = 2

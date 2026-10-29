@@ -1,8 +1,8 @@
 # Test files, from https://github.com/m3g/MolSimTestFiles (downloaded only when needed)
 [pdbtools_test_files]
-git-tree-sha1 = "7f3bcdf94edc147fd0e2e14370de3e30f584ef64"
+git-tree-sha1 = "136c3869ddfd5227fc7ccadff7f8022c76b3e288"
 lazy = true
 
     [[pdbtools_test_files.download]]
-    url = "https://github.com/m3g/MolSimTestFiles/releases/download/pdbtools-v1/pdbtools.tar.gz"
-    sha256 = "e84ec74dac6645df4bf24d46919b50e35f785ed93880716307aec551909d1390"
+    url = "https://github.com/m3g/MolSimTestFiles/releases/download/pdbtools-v2/pdbtools.tar.gz"
+    sha256 = "913d0136475ef1debf508ac665c2d5817f564ca2bfd9e7bdef789d52745e3754"

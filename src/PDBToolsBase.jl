@@ -72,7 +72,6 @@ public dihedrals
 const src_dir = @__DIR__
 const SMALLPDB = joinpath(src_dir, "../test/small.pdb")
 const TESTCIF = joinpath(src_dir, "../test/small.cif")
-const SMALLXYZ = joinpath(src_dir, "../test/small.xyz")
 
 # test_file(name): path of the test file `name`. The test files are a lazy artifact (see
 # Artifacts.toml), downloaded on the first call. The method is defined in the TestFilesExt

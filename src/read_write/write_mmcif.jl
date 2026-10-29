@@ -315,7 +315,7 @@ end
 
 @testitem "write_mmcif - connectivity and title" setup = [PublicNames] begin
     using PDBToolsBase
-    file = joinpath(pkgdir(PDBToolsBase), "test", "ethanol.pdb")
+    file = PDBToolsBase.test_file("ethanol.pdb")
     s = read_pdb(file)
     tmpfile = tempname() * ".cif"
     write_mmcif(tmpfile, s)

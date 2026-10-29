@@ -25,7 +25,7 @@ is true will be read.
 ```julia-repl
 julia> using PDBTools
 
-julia> s = read_xyz("ethanol.xyz")
+julia> s = read_xyz(PDBTools.test_file("ethanol.xyz"))
    Structure{Atom{Nothing}} with 9 atoms
    index name resname chain   resnum  residue        x        y        z occup  beta model segname index_pdb
        1    C     XXX     X        1        1   -0.748   -0.015    0.024  0.00  0.00     1       X         1
@@ -131,7 +131,7 @@ end
 
 @testitem "read_xyz" setup = [PublicNames] begin
     using PDBToolsBase
-    s = read_xyz(PDBToolsBase.SMALLXYZ)
+    s = read_xyz(PDBToolsBase.test_file("ethanol.xyz"))
     @test s isa Structure{Atom{Nothing}}
     @test length(s) == 9
     @test s.title == "Ethanol"
@@ -144,13 +144,13 @@ end
     @test all(==(1), resnum.(s)) && all(==(1), residue.(s)) && all(==(1), model.(s))
     @test (s[3].x, s[3].y, s[3].z) == (0.716f0, -0.191f0, -1.871f0)
     @test length(eachresidue(s)) == 1
-    @test read_xyz(IOBuffer(read(PDBToolsBase.SMALLXYZ, String))) == s
+    @test read_xyz(IOBuffer(read(PDBToolsBase.test_file("ethanol.xyz"), String))) == s
     # coordinates are the same as those of the PDB file
-    pdb = read_pdb(joinpath(pkgdir(PDBToolsBase), "test", "ethanol.pdb"))
+    pdb = read_pdb(PDBToolsBase.test_file("ethanol.pdb"))
     @test positions(s) == positions(pdb)
     @test element.(s) == element.(pdb)
     # selection
-    s = read_xyz(PDBToolsBase.SMALLXYZ, at -> element(at) != "H")
+    s = read_xyz(PDBToolsBase.test_file("ethanol.xyz"), at -> element(at) != "H")
     @test length(s) == 3
     @test index.(s) == 1:3
     # multiple frames, atom labels, atomic numbers, extra columns, and empty comment
@@ -184,5 +184,5 @@ end
     @test_throws "could not read atom" read_xyz(IOBuffer("1\n\nC 0 0\n"))
     @test_throws "unknown atomic number" read_xyz(IOBuffer("1\n\n999 0 0 0\n"))
     @test_throws "Could not find any atom" read_xyz(IOBuffer("0\n\n"))
-    @test_throws "Could not find any atom" read_xyz(PDBToolsBase.SMALLXYZ, at -> false)
+    @test_throws "Could not find any atom" read_xyz(PDBToolsBase.test_file("ethanol.xyz"), at -> false)
 end

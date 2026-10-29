@@ -34,7 +34,7 @@ PrecompileTools.@setup_workload begin
         wrap_to_first(x32, uc64)
         # Structures and IO
         ats = read_mmcif(PDBToolsBase.TESTCIF)
-        ats = read_xyz(PDBToolsBase.SMALLXYZ)
+        ats = read_xyz(IOBuffer("3\nwater\nO 0.0 0.0 0.0\nH 0.96 0.0 0.0\nH -0.24 0.93 0.0\n"))
         ats = read_pdb(PDBToolsBase.SMALLPDB)
         positions(ats)
         center_of_mass(ats)
