@@ -10,7 +10,7 @@ PDBToolsBase.jl Changelog
 [badge-fix]: https://img.shields.io/badge/Fix-purple.svg
 [badge-info]: https://img.shields.io/badge/Info-gray.svg
 
-Version 1.1.0-DEV
+Version 1.1.0
 -------------
 - ![FEATURE][badge-feature] `read_xyz` and `write_xyz` read and write files in the xyz format. Multiple frames are read as, and written from, different models.
 - ![FEATURE][badge-feature] `connectivity` field of the metadata of `Structure`s: the bonds read from the `CONECT` records of PDB files or the `_geom_bond` fields of mmCIF files, as a `Vector{Vector{Int32}}`, where `connectivity[i]` contains the indices of the atoms bonded to the atom with index `i` (`nothing` if not available). `write_pdb` and `write_mmcif` write the connectivity of `Structure`s.
