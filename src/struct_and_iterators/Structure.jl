@@ -9,6 +9,16 @@ of the structure (e.g. `s.unitcell`), and can be set in the `Structure` construc
 - `unitcell::Union{Nothing,UnitCell}`: The unit cell of the system (see [`UnitCell`](@ref)), or 
   `nothing` if the structure is not periodic. When setting it (`s.unitcell = ...`), values that are 
   not a `UnitCell` are converted with the `UnitCell` constructor.
+- `connectivity::Union{Nothing,Vector{Vector{Int32}}}`: The bonds of the atoms, as read from
+  the `CONECT` records of PDB files or the `_geom_bond` fields of mmCIF files:
+  `connectivity[i]` contains the indices of the atoms bonded to the atom with index `i`. 
+  The indices are the sequential indices of the atoms in the file (`index(atom)`, which are 
+  not changed by selections or filtering). The bonds of PDB files are listed as in the file
+  (they are not symmetrized). `nothing` if the connectivity is not available. When setting it,
+  vectors of vectors of integers are converted to `Vector{Vector{Int32}}`.
+- `title::Union{Nothing,String}`: The title of the structure, as read from the `TITLE`
+  records of PDB files, the `_struct.title` field of mmCIF files, or the comment line of
+  xyz files. `nothing` if the file does not define a title.
 
 !!! note
     All fields of `MetaData` accept `nothing`, which means that the property is not defined.
@@ -18,17 +28,26 @@ of the structure (e.g. `s.unitcell`), and can be set in the `Structure` construc
 """
 mutable struct MetaData
     unitcell::Union{Nothing,UnitCell}
+    connectivity::Union{Nothing,Vector{Vector{Int32}}}
+    title::Union{Nothing,String}
 end
-MetaData(; unitcell=nothing) = MetaData(_unitcell_value(unitcell))
+MetaData(; unitcell=nothing, connectivity=nothing, title=nothing) =
+    MetaData(_unitcell_value(unitcell), _connectivity_value(connectivity), title)
 
 _unitcell_value(::Nothing) = nothing
 _unitcell_value(unitcell) = UnitCell(unitcell)
+_connectivity_value(::Nothing) = nothing
+_connectivity_value(connectivity) = convert(Vector{Vector{Int32}}, connectivity)
 
 function Base.setproperty!(m::MetaData, field::Symbol, value)
     field === :unitcell && return setfield!(m, :unitcell, _unitcell_value(value))
+    field === :connectivity && return setfield!(m, :connectivity, _connectivity_value(value))
     return setfield!(m, field, value)
 end
-Base.copy(m::MetaData) = MetaData((getfield(m, f) for f in fieldnames(MetaData))...)
+# The connectivity is copied, such that copies of structures do not share it
+Base.copy(m::MetaData) = MetaData(m.unitcell, _copy_connectivity(m.connectivity), m.title)
+_copy_connectivity(::Nothing) = nothing
+_copy_connectivity(c::Vector{Vector{Int32}}) = map(copy, c)
 
 # Metadata of concatenated structures: properties that differ are set to `nothing`
 function _merge_metadata(m1::MetaData, ms::MetaData...)
@@ -79,9 +98,13 @@ struct Structure{T<:Atom,V<:AbstractVector{T}} <: AbstractVector{T}
 end
 Structure(atoms::AbstractVector{<:Atom}=Atom{Nothing}[]; kargs...) = Structure(atoms, MetaData(; kargs...))
 
-# Unit cell of a vector of atoms, if available
+# Metadata of a vector of atoms, if available
 _unitcell(::AbstractVector{<:Atom}) = nothing
 _unitcell(s::Structure) = s.unitcell
+_connectivity(::AbstractVector{<:Atom}) = nothing
+_connectivity(s::Structure) = s.connectivity
+_title(::AbstractVector{<:Atom}) = nothing
+_title(s::Structure) = s.title
 
 #
 # Interpretation of the `unitcell` keyword argument of functions that support periodic
@@ -182,7 +205,9 @@ end
     @test length(s) == length(ats)
     s[2] = Atom(name="CA")
     @test s[2] == Atom(name="CA")
-    @test propertynames(s) == (:atoms, :metadata, :unitcell)
+    @test propertynames(s) == (:atoms, :metadata, :unitcell, :connectivity, :title)
+    @test isnothing(s.connectivity)
+    @test isnothing(s.title)
     @test isnothing(s.unitcell)
     s.unitcell = [ 1 0 0 ; 0 1 0 ; 0 0 1]
     @test s.unitcell == [ 1 0 0 ; 0 1 0 ; 0 0 1]
@@ -200,6 +225,23 @@ end
     @test_throws ArgumentError s.unitcell = [1 0; 0 1]
     @test_throws ArgumentError Structure(ats; unitcell=[1 0; 0 1])
     @test_throws MethodError Structure(ats; abc=1)
+    s = Structure(ats[1:3]; connectivity=[[2], [1, 3], [2]], title="test")
+    @test s.connectivity == [[2], [1, 3], [2]]
+    @test s.connectivity isa Vector{Vector{Int32}}
+    s.connectivity = [[2], [1]]
+    @test s.connectivity isa Vector{Vector{Int32}}
+    s.connectivity = [[2], [1, 3], [2]]
+    @test s.title == "test"
+    # copies do not share the connectivity
+    s2 = copy(s)
+    push!(s2.connectivity[1], 3)
+    @test s.connectivity[1] == [2]
+    @test s2.title == "test"
+    # concatenation of structures with different metadata
+    @test isnothing(vcat(s, Structure(ats[1:3])).connectivity)
+    @test vcat(s, s).title == "test"
+    s.title = nothing
+    @test isnothing(s.title)
 end
 
 @testitem "Structure - vector interface" setup = [PublicNames] begin

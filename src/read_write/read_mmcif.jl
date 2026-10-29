@@ -257,8 +257,14 @@ function _parse_mmCIF(
     ncols = 0
     ifield = 0
     lattice = _empty_lattice
+    title = ""
+    title_state = _no_title
     _atom_site_field_inds = Dict{String,Int}()
     for line in eachline(cifdata)
+        # Title: the _struct fields are expected to precede the _atom_site fields
+        if title_state != _no_title || startswith(line, "_struct.title")
+            title, title_state = _read_title_cif(title, title_state, line)
+        end
         # Unit cell: the _cell fields are expected to precede the _atom_site fields
         if startswith(line, "_cell.")
             lattice = _read_lattice_line(lattice, line)
@@ -295,7 +301,16 @@ function _parse_mmCIF(
     seekstart(cifdata)
     _atoms_token = false
     _atoms = false
+    _atoms_done = false
+    # _atom_site.id of all atoms read (selected or not), and the bonds of the _geom_bond fields
+    serials = Int32[]
+    bonds = _GeomBonds()
     for line in eachline(cifdata)
+        # Bonds: the _geom_bond fields can be before or after the _atom_site fields
+        if bonds.state != _no_geom_bond || startswith(line, "_geom_bond.")
+            _read_geom_bond_line!(bonds, line, record_fields) && continue
+        end
+        _atoms_done && continue
         if startswith(line, "_atom_site.")
             _atoms_token = true
         end
@@ -303,17 +318,131 @@ function _parse_mmCIF(
             if startswith(line, r"ATOM|HETATM")
                 _atoms = true
                 atom = read_atom_mmcif(line, ncols, columns, record_fields, lastatom)
+                push!(serials, index_pdb(atom))
                 selection_function(atom) && push!(atoms, atom)
                 _maximum_read(atoms, stop_at, memory_available) && break
                 lastatom = atom
             elseif _atoms # went through atom list and a new token is found
-                _new_cif_token(line) && break
+                # the rest of the file is read only to search for the _geom_bond fields
+                _new_cif_token(line) && (_atoms_done = true)
             end
         end
     end
     seekstart(cifdata)
     _error_if_no_atoms(atoms)
-    return Structure(atoms, MetaData(_structure_unitcell(lattice)))
+    metadata = MetaData(
+        _structure_unitcell(lattice),
+        _connectivity_from_records(bonds.records, serials),
+        isempty(title) ? nothing : title,
+    )
+    return Structure(atoms, metadata)
+end
+
+#
+# Bonds of the _geom_bond fields, given by the _atom_site.id of the two atoms 
+# (_geom_bond.atom_site_id_1 and _geom_bond.atom_site_id_2). The fields can be in a loop_
+# or, for a single bond, in key-value pairs. Bonds are stored in both directions.
+# `_read_geom_bond_line!` returns `false` if the line ends the _geom_bond fields (and thus
+# belongs to the next fields of the file).
+#
+const _no_geom_bond = 0
+const _geom_bond_header = 1
+const _geom_bond_data = 2
+mutable struct _GeomBonds
+    state::Int
+    ncols::Int
+    col1::Int # column of atom_site_id_1
+    col2::Int # column of atom_site_id_2
+    id1::Int32 # values of the key-value form
+    id2::Int32
+    records::Vector{Vector{Int32}}
+end
+_GeomBonds() = _GeomBonds(_no_geom_bond, 0, 0, 0, 0, 0, Vector{Int32}[])
+
+function _add_geom_bond!(bonds::_GeomBonds, id1::Int32, id2::Int32)
+    push!(bonds.records, Int32[id1, id2])
+    push!(bonds.records, Int32[id2, id1])
+    return bonds
+end
+
+function _read_geom_bond_line!(bonds::_GeomBonds, line::String, fields::Vector{SubString{String}})
+    if startswith(line, "_geom_bond.")
+        bonds.state = _geom_bond_header
+        empty!(fields)
+        for field in eachsplit(line)
+            push!(fields, field)
+        end
+        bonds.ncols += 1
+        tag = @view(fields[1][12:end])
+        if length(fields) == 1 # loop_ header
+            tag == "atom_site_id_1" && (bonds.col1 = bonds.ncols)
+            tag == "atom_site_id_2" && (bonds.col2 = bonds.ncols)
+        else # key-value pair
+            id = something(_tryparse(Int32, fields[2]), Int32(0))
+            tag == "atom_site_id_1" && (bonds.id1 = id)
+            tag == "atom_site_id_2" && (bonds.id2 = id)
+        end
+        return true
+    end
+    # end of the _geom_bond fields
+    if startswith(line, '#') || startswith(line, "loop_") || startswith(line, '_') || startswith(line, "data_")
+        if bonds.id1 > 0 && bonds.id2 > 0
+            _add_geom_bond!(bonds, bonds.id1, bonds.id2)
+        end
+        bonds.state = _no_geom_bond
+        bonds.ncols = bonds.col1 = bonds.col2 = 0
+        bonds.id1 = bonds.id2 = 0
+        return false
+    end
+    bonds.state = _geom_bond_data
+    (bonds.col1 == 0 || bonds.col2 == 0) && return true
+    empty!(fields)
+    for field in eachsplit(line)
+        push!(fields, field)
+    end
+    length(fields) < max(bonds.col1, bonds.col2) && return true
+    id1 = _tryparse(Int32, fields[bonds.col1])
+    id2 = _tryparse(Int32, fields[bonds.col2])
+    if !isnothing(id1) && !isnothing(id2)
+        _add_geom_bond!(bonds, id1, id2)
+    end
+    return true
+end
+
+# State of the reading of the _struct.title field, of which the value can be in the same line,
+# in the next line, or in a multi-line text field delimited by lines starting with ';'
+const _no_title = 0
+const _title_in_next_line = 1
+const _title_in_text_field = 2
+
+function _read_title_cif(title::String, state::Int, line::String)
+    if state == _title_in_text_field
+        startswith(line, ';') && return title, _no_title
+        t = strip(line)
+        title = isempty(title) ? String(t) : title * " " * t
+        return title, _title_in_text_field
+    end
+    if state == _title_in_next_line
+        if startswith(line, ';')
+            return String(strip(@view(line[2:end]))), _title_in_text_field
+        end
+        return _unquote_cif(line), _no_title
+    end
+    # line starting with _struct.title
+    length(line) > 13 && !isspace(line[14]) && return title, _no_title # e.g. _struct.title_xyz
+    value = strip(@view(line[14:end]))
+    isempty(value) && return title, _title_in_next_line
+    return _unquote_cif(value), _no_title
+end
+
+function _unquote_cif(value::AbstractString)
+    value = strip(value)
+    if length(value) >= 2 && first(value) in ('\'', '"') && last(value) == first(value)
+        value = @view(value[nextind(value, 1):prevind(value, lastindex(value))])
+    end
+    # undefined (?) or not applicable (.) values
+    value in ("?", ".") && return ""
+    return String(value)
 end
 
 function read_atom_mmcif(
@@ -423,4 +552,74 @@ end
     # Throw error if no ATOM fields were found
     @test_throws "no ATOM or HETATM fields" read_mmcif(PDBToolsBase.test_file("broken.cif"))
     @test_throws "no ATOM or HETATM fields" read_pdb(PDBToolsBase.test_file("broken.cif"))
+end
+@testitem "read_mmcif - title" setup = [PublicNames] begin
+    using PDBToolsBase
+    @test read_mmcif(PDBToolsBase.test_file("1LBD.cif")).title == "LIGAND-BINDING DOMAIN OF THE HUMAN NUCLEAR RECEPTOR RXR-ALPHA"
+    @test read_pdb(PDBToolsBase.test_file("1UBQ.cif")).title == "STRUCTURE OF UBIQUITIN REFINED AT 1.8 ANGSTROMS RESOLUTION"
+    @test isnothing(read_mmcif(PDBToolsBase.TESTCIF).title)
+    @test isnothing(read_mmcif(PDBToolsBase.TESTCIF).connectivity)
+    # title formats
+    atom_site = """
+    loop_
+    _atom_site.group_PDB
+    _atom_site.id
+    _atom_site.Cartn_x
+    _atom_site.Cartn_y
+    _atom_site.Cartn_z
+    ATOM 1 0.0 0.0 0.0
+    """
+    title(header) = read_mmcif(IOBuffer(header * atom_site)).title
+    @test title("_struct.title 'A title'\n") == "A title"
+    @test title("_struct.title \"A title\"\n") == "A title"
+    @test title("_struct.title ABC\n") == "ABC"
+    @test title("_struct.title\n'A title in the next line'\n") == "A title in the next line"
+    @test title("_struct.title\n;A multi-line\n title\n;\n") == "A multi-line title"
+    @test title("_struct.title ?\n") === nothing
+    @test title("_struct.title_other 'X'\n") === nothing
+end
+
+@testitem "read_mmcif - connectivity" setup = [PublicNames] begin
+    using PDBToolsBase
+    atom_site = """
+    loop_
+    _atom_site.group_PDB
+    _atom_site.id
+    _atom_site.label_atom_id
+    _atom_site.Cartn_x
+    _atom_site.Cartn_y
+    _atom_site.Cartn_z
+    ATOM 10 C1 0.0 0.0 0.0
+    ATOM 20 C2 1.5 0.0 0.0
+    ATOM 30 O1 2.0 1.0 0.0
+    #
+    """
+    geom_bond = """
+    loop_
+    _geom_bond.atom_site_id_1
+    _geom_bond.atom_site_id_2
+    _geom_bond.dist
+    10 20 1.5
+    20 30 1.4
+    #
+    """
+    # bonds after and before the atoms
+    s = read_mmcif(IOBuffer(atom_site * geom_bond))
+    @test s.connectivity == [[2], [1, 3], [2]]
+    @test read_mmcif(IOBuffer(geom_bond * atom_site)).connectivity == s.connectivity
+    # _geom_bond fields followed directly by other fields
+    @test read_mmcif(IOBuffer(replace(geom_bond, "#\n" => "") * atom_site)).connectivity == s.connectivity
+    @test read_pdb(IOBuffer(atom_site * geom_bond)).connectivity == s.connectivity
+    # selection
+    s = read_mmcif(IOBuffer(atom_site * geom_bond), at -> name(at) != "C1")
+    @test length(s) == 2
+    @test s.connectivity == [[2], [1, 3], [2]]
+    # key-value form, for a single bond
+    s = read_mmcif(IOBuffer(atom_site * "_geom_bond.atom_site_id_1 20\n_geom_bond.atom_site_id_2 30\n#\n"))
+    @test s.connectivity == [Int32[], [3], [2]]
+    # no bonds
+    @test isnothing(read_mmcif(IOBuffer(atom_site)).connectivity)
+    # missing atoms
+    s = @test_logs (:warn, r"2 atom serial numbers") read_mmcif(IOBuffer(atom_site * "loop_\n_geom_bond.atom_site_id_1\n_geom_bond.atom_site_id_2\n10 40\n#\n"))
+    @test s.connectivity == [Int32[], Int32[], Int32[]]
 end

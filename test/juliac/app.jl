@@ -9,8 +9,8 @@
 # (Julia 1.13+). Printing uses `Core.stdout`, because `stdout` is not initialized in
 # trimmed executables.
 #
-using PDBToolsBase: read_pdb, read_mmcif, write_pdb, write_mmcif, read_unitcell,
-    isprotein, name, eachresidue, eachchain, center_of_mass, moveto!, Structure, UnitCell
+using PDBToolsBase: read_pdb, read_mmcif, read_xyz, write_pdb, write_mmcif, write_xyz, read_unitcell,
+    isprotein, name, index, eachresidue, eachchain, center_of_mass, moveto!, Structure, UnitCell
 
 function (@main)(ARGS)
     input, output = ARGS[1], ARGS[2]
@@ -23,6 +23,7 @@ function (@main)(ARGS)
     moveto!(protein)
     write_pdb(output * ".pdb", protein)
     write_mmcif(output * ".cif", protein)
+    write_xyz(output * ".xyz", Structure(ca.atoms; title="CA atoms"))
     back_pdb = read_pdb(output * ".pdb")
     back_cif = read_mmcif(output * ".cif")
     # Structure with unit cell
@@ -34,6 +35,28 @@ function (@main)(ARGS)
     write_mmcif(output * "_structure.cif", s_view)
     uc_pdb = read_unitcell(output * "_structure.pdb")
     uc_cif = read_unitcell(output * "_structure.cif")
+    # xyz file, title and connectivity
+    xyz = read_xyz(output * ".xyz")
+    println(Core.stdout, "xyz atoms: ", length(xyz), " title: ", something(xyz.title, "none"))
+    # title and connectivity written and read back
+    # (the connectivity refers to the indices of the atoms, so the CA atoms are renumbered)
+    ca_atoms = copy.(ca.atoms)
+    for (i, at) in pairs(ca_atoms)
+        at.index = i
+    end
+    s_bonds = Structure(ca_atoms; title="CA trace", connectivity=[Int32[i - 1, i + 1] for i in 1:length(ca)])
+    write_pdb(output * "_bonds.pdb", s_bonds)
+    write_mmcif(output * "_bonds.cif", s_bonds)
+    write_xyz(output * "_bonds.xyz", s_bonds, at -> index(at) <= 10)
+    b_pdb = read_pdb(output * "_bonds.pdb")
+    b_cif = read_mmcif(output * "_bonds.cif")
+    nb_pdb = length(something(b_pdb.connectivity, Vector{Int32}[]))
+    nb_cif = length(something(b_cif.connectivity, Vector{Int32}[]))
+    println(Core.stdout, "bonds read back: " * something(b_pdb.title, "none") * " " * string(nb_pdb))
+    println(Core.stdout, "bonds read back: " * something(b_cif.title, "none") * " " * string(nb_cif))
+    println(Core.stdout, "xyz read back: " * string(length(read_xyz(output * "_bonds.xyz"))))
+    println(Core.stdout, "title of input: ", something(atoms.title, "none"),
+        " connectivity: ", isnothing(atoms.connectivity) ? "none" : string(length(atoms.connectivity)))
     println(Core.stdout, "atoms: ", length(atoms))
     println(Core.stdout, "protein atoms: ", length(protein), " CA: ", length(ca))
     println(Core.stdout, "residues: ", nres, " chains: ", nchains)

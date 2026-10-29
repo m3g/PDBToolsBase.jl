@@ -29,6 +29,7 @@ public atomic_number, atomic_symbol, atomic_mass, position, set_position!
 
 public read_pdb, write_pdb, oneletter, threeletter, residuename
 public read_mmcif, write_mmcif
+public read_xyz, write_xyz
 public Atom, printatom, index, index_pdb, name, beta, occup, charge, pdb_element
 public Structure, UnitCell, MetaData
 public add_custom_field
@@ -114,6 +115,8 @@ include("./read_write/read_pdb.jl")
 include("./read_write/write_pdb.jl")
 include("./read_write/read_mmcif.jl")
 include("./read_write/write_mmcif.jl")
+include("./read_write/read_xyz.jl")
+include("./read_write/write_xyz.jl")
 
 
 # Coordinates-dependent functions
