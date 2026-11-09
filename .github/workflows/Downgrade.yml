@@ -12,12 +12,13 @@ on:
       - 'docs/**'
 jobs:
   test:
-    # Julia 1.11.0 does not start on Ubuntu 26 (glibc refuses its executable-stack libopenlibm)
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-latest
     strategy:
       matrix:
         version:
-          - '1.11.0'
+          # latest 1.11 patch release: 1.11.0 does not start on Ubuntu 26
+          # (glibc refuses its executable-stack libopenlibm)
+          - '1.11'
     steps:
       - uses: actions/checkout@v7
       - uses: julia-actions/setup-julia@v3
