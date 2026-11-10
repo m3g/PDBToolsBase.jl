@@ -10,6 +10,9 @@ PDBToolsBase.jl Changelog
 [badge-fix]: https://img.shields.io/badge/Fix-purple.svg
 [badge-info]: https://img.shields.io/badge/Info-gray.svg
 
+Version 1.1.2-DEV
+-------------
+
 Version 1.1.1
 -------------
 - ![BUGFIX][badge-bugfix] `write_pdb` failed with `String(::Nothing)` when writing atoms whose element is not a known element (e.g. coarse-grained beads with `pdb_element` `G`, `R` or `D`). The element is now written as given, truncated to 2 characters ([#10](https://github.com/m3g/PDBToolsBase.jl/issues/10)).
