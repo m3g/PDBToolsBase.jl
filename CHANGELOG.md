@@ -12,6 +12,8 @@ PDBToolsBase.jl Changelog
 
 Version 1.1.1-DEV
 -------------
+- ![BUGFIX][badge-bugfix] `write_pdb` failed with `String(::Nothing)` when writing atoms whose element is not a known element (e.g. coarse-grained beads with `pdb_element` `G`, `R` or `D`). The element is now written as given, truncated to 2 characters ([#10](https://github.com/m3g/PDBToolsBase.jl/issues/10)).
+- ![BUGFIX][badge-bugfix] `write_pdb` warned that coordinates greater than `999.999` did not fit the PDB format; the warning is now given only for coordinates outside the `-999.999` to `9999.999` range, which is what the format holds ([#10](https://github.com/m3g/PDBToolsBase.jl/issues/10)).
 
 Version 1.1.0
 -------------

@@ -307,6 +307,31 @@ end
     @test !any(l -> startswith(l, "CONECT") || startswith(l, "TITLE"), readlines(tmpfile))
 end
 
+# Regression tests for https://github.com/m3g/PDBToolsBase.jl/issues/10
+@testitem "write_pdb - unknown elements and large coordinates" setup = [PublicNames] begin
+    using PDBToolsBase
+    tmpfile = tempname() * ".pdb"
+    # coarse-grained beads, whose elements are not known elements
+    beads = [
+        Atom(; index=i, index_pdb=i, name=n, resname="POPC", resnum=1, x=Float32(i), y=2.0, z=3.0, pdb_element=el)
+        for (i, (n, el)) in enumerate([("ROH", "R"), ("GL1", "G"), ("D1A", "D"), ("C1A", "C"), ("PO4", "P")])
+    ]
+    write_pdb(tmpfile, beads)
+    s = read_pdb(tmpfile)
+    @test length(s) == 5
+    @test name.(s) == ["ROH", "GL1", "D1A", "C1A", "PO4"]
+    @test pdb_element.(s) == ["R", "G", "D", "C", "P"]
+    # coordinates that fit the PDB format (-999.999 to 9999.999) are written and read back
+    ats = [
+        Atom(; index=1, index_pdb=1, name="C1", resname="ALA", resnum=1, x=1500.0, y=9999.999, z=-999.999),
+        Atom(; index=2, index_pdb=2, name="C2", resname="ALA", resnum=1, x=2000.0, y=0.0, z=-500.0),
+    ]
+    write_pdb(tmpfile, ats)
+    s = read_pdb(tmpfile)
+    @test [position(at) for at in s] ≈ [[1500.0, 9999.999, -999.999], [2000.0, 0.0, -500.0]]
+    @test all(PDBToolsBase._fits_pdb_coordinate(c) for at in ats for c in (at.x, at.y, at.z))
+end
+
 #
 # Function that returns an ATOM line in PDB format
 #
@@ -325,6 +350,20 @@ function _align_resname(resname)
     length(resname) == 2 && return "$(resname)  "
     length(resname) == 3 && return "$(resname) "
     return String(resname)
+end
+
+# A coordinate fits if its %8.3f representation has at most 8 characters, that is, if it 
+# rounds (to 3 decimals) to a value from -999.999 to 9999.999 (Float32 coordinates near 
+# these limits are slightly beyond them, but are printed within the field)
+_fits_pdb_coordinate(x) = -999.9995 < x < 9999.9995
+
+# Element column (77-78): the symbol of known elements, or the element as given (for 
+# example, the `pdb_element` of coarse-grained beads), truncated to 2 characters.
+function _pdb_element_column(atom::Atom)
+    el = element(atom)
+    el === nothing && return "  "
+    symbol = element_symbol_string(atom)
+    return String(first(something(symbol, el), 2))
 end
 
 function write_pdb_atom(atom::Atom, serial::Integer=index(atom))
@@ -349,7 +388,8 @@ function write_pdb_atom(atom::Atom, serial::Integer=index(atom))
     #77 - 78        LString(2)    element      Element symbol string, right-justified.
     #79 - 80        LString(2)    charge       Charge  on the atom.
 
-    if abs(atom.x) > 999.999 || abs(atom.y) > 999.999 || abs(atom.z) > 999.999
+    # %8.3f fields hold values from -999.999 to 9999.999
+    if !(_fits_pdb_coordinate(atom.x) && _fits_pdb_coordinate(atom.y) && _fits_pdb_coordinate(atom.z))
         println(Core.stderr,
             "Warning: coordinates of atom $(atom.index) " *
             "($(atom.name) $(atom.resname)$(atom.resnum) $(atom.chain)) " *
@@ -374,7 +414,7 @@ function write_pdb_atom(atom::Atom, serial::Integer=index(atom))
         atom.beta,
         "      ",
         segname(atom),
-        element(atom) === nothing ? "  " : String(element_symbol_string(atom)),
+        _pdb_element_column(atom),
     )
 
     line = if serial <= 99999 && atom.resnum <= 9999 # standard integer printing
@@ -406,4 +446,25 @@ end
     @test PDBToolsBase.write_pdb_atom(pdb[1]) == "ATOM  f4240  N   ALAXA424f      -9.229 -14.861  -5.481  0.00  0.00      PROT N"
     pdb[1].flag = 1
     @test PDBToolsBase.write_pdb_atom(pdb[1]) == "HETATMf4240  N   ALAXA424f      -9.229 -14.861  -5.481  0.00  0.00      PROT N"
+    # unknown element symbols (e.g. coarse-grained beads)
+    for el in ("G", "R", "D")
+        a = Atom(; index=1, index_pdb=1, name="GL1", resname="POPC", resnum=1, x=1.0, y=2.0, z=3.0, pdb_element=el)
+        line = PDBToolsBase.write_pdb_atom(a)
+        @test length(line) == 78
+        @test line[77:78] == " $el"
+    end
+    a = Atom(; name="GL1", pdb_element="")
+    @test PDBToolsBase.write_pdb_atom(a)[77:78] == "  "
+    # coordinates that fit the %8.3f format do not trigger the warning
+    @test PDBToolsBase._fits_pdb_coordinate(1500.0)
+    @test PDBToolsBase._fits_pdb_coordinate(9999.999)
+    @test PDBToolsBase._fits_pdb_coordinate(-999.999)
+    @test !PDBToolsBase._fits_pdb_coordinate(10000.0)
+    @test !PDBToolsBase._fits_pdb_coordinate(-1000.0)
+    @test PDBToolsBase._fits_pdb_coordinate(9999.999f0)
+    @test PDBToolsBase._fits_pdb_coordinate(-999.999f0)
+    @test !PDBToolsBase._fits_pdb_coordinate(9999.9996)
+    @test !PDBToolsBase._fits_pdb_coordinate(-999.9996)
+    a = Atom(; index=1, index_pdb=1, name="C1", resname="ALA", resnum=1, x=1500.0, y=2.0, z=3.0)
+    @test PDBToolsBase.write_pdb_atom(a)[31:54] == "1500.000   2.000   3.000"
 end
