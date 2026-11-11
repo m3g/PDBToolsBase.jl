@@ -368,10 +368,7 @@ end
 function _read_geom_bond_line!(bonds::_GeomBonds, line::String, fields::Vector{SubString{String}})
     if startswith(line, "_geom_bond.")
         bonds.state = _geom_bond_header
-        empty!(fields)
-        for field in eachsplit(line)
-            push!(fields, field)
-        end
+        _split_cif!(fields, line)
         bonds.ncols += 1
         tag = @view(fields[1][12:end])
         if length(fields) == 1 # loop_ header
@@ -396,10 +393,7 @@ function _read_geom_bond_line!(bonds::_GeomBonds, line::String, fields::Vector{S
     end
     bonds.state = _geom_bond_data
     (bonds.col1 == 0 || bonds.col2 == 0) && return true
-    empty!(fields)
-    for field in eachsplit(line)
-        push!(fields, field)
-    end
+    _split_cif!(fields, line)
     length(fields) < max(bonds.col1, bonds.col2) && return true
     id1 = _tryparse(Int32, fields[bonds.col1])
     id2 = _tryparse(Int32, fields[bonds.col2])
@@ -445,6 +439,60 @@ function _unquote_cif(value::AbstractString)
     return String(value)
 end
 
+# Splits a line of a CIF loop into its values, which are separated by whitespace. Values 
+# can be quoted ('...' or "..."), in which case they can contain whitespace, and the quotes
+# are removed. As in CIF, a quote only closes the value if followed by whitespace or by the 
+# end of the line (thus, 'it's' is the value it's). An unquoted # starts a comment. 
+function _split_cif!(fields::Vector{SubString{String}}, line::String)
+    empty!(fields)
+    i = firstindex(line)
+    n = lastindex(line)
+    while i <= n
+        c = line[i]
+        if isspace(c)
+            i = nextind(line, i)
+            continue
+        end
+        c == '#' && break # comment
+        if c == '\'' || c == '"'
+            first_char = nextind(line, i)
+            j = first_char
+            while j <= n
+                if line[j] == c
+                    k = nextind(line, j)
+                    (k > n || isspace(line[k])) && break
+                end
+                j = nextind(line, j)
+            end
+            # unterminated quote: the value extends to the end of the line
+            push!(fields, SubString(line, first_char, prevind(line, j)))
+            i = j > n ? j : nextind(line, j)
+        else
+            j = i
+            while j <= n && !isspace(line[j])
+                j = nextind(line, j)
+            end
+            push!(fields, SubString(line, i, prevind(line, j)))
+            i = j
+        end
+    end
+    return fields
+end
+
+@testitem "_split_cif!" begin
+    using PDBToolsBase: _split_cif!
+    f = SubString{String}[]
+    @test _split_cif!(f, "ATOM 1 C C1 . VAL A") == ["ATOM", "1", "C", "C1", ".", "VAL", "A"]
+    @test _split_cif!(f, "  ATOM  1   ") == ["ATOM", "1"]
+    @test _split_cif!(f, "ATOM '1 NAD' \"2 NAD\" '#' A") == ["ATOM", "1 NAD", "2 NAD", "#", "A"]
+    @test _split_cif!(f, "ATOM 'it's' \"a \"b\"\" O5' x") == ["ATOM", "it's", "a \"b\"", "O5'", "x"]
+    @test _split_cif!(f, "ATOM '.' '?' '' x") == ["ATOM", ".", "?", "", "x"]
+    @test _split_cif!(f, "1 # 1 ?") == ["1"]
+    @test _split_cif!(f, "A# 'unterminated") == ["A#", "unterminated"]
+    @test _split_cif!(f, "'é ü' ñ") == ["é ü", "ñ"]
+    @test _split_cif!(f, "") == String[]
+end
+
 function read_atom_mmcif(
     record::String,
     ncols::Int,
@@ -452,10 +500,7 @@ function read_atom_mmcif(
     record_fields::Vector{SubString{String}},
     lastatom::Atom,
 )
-    empty!(record_fields)
-    for field in eachsplit(record)
-        push!(record_fields, field)
-    end
+    _split_cif!(record_fields, record)
     if length(record_fields) != ncols
         throw(ArgumentError("mmCIF record has $(length(record_fields)) fields, expected $ncols: \"$record\""))
     end

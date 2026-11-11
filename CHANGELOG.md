@@ -12,6 +12,7 @@ PDBToolsBase.jl Changelog
 
 Version 1.1.2-DEV
 -------------
+- ![BUGFIX][badge-bugfix] `write_mmcif` wrote all values unquoted, such that values with whitespace (e.g. the residue name `1 NAD`) could not be read back, and values starting with `#` (e.g. the chain `#` given by Packmol) were comments for other mmCIF readers. Values that contain whitespace, start with a character reserved in CIF (`#`, `_`, `$`, `'`, `"`, `;`, `[`, `]`), or are literally `.` or `?` are now quoted, in all tables of the file. `read_mmcif` reads quoted values, and ignores comments in data lines ([#13](https://github.com/m3g/PDBToolsBase.jl/issues/13)).
 
 Version 1.1.1
 -------------
