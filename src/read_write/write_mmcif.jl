@@ -69,8 +69,34 @@ function _write_mmcif_cell(io::IO, unitcell::AbstractMatrix)
     println(io, "#")
 end
 
-_dot_for_empty(val) = val
-_dot_for_empty(val::AbstractString) = isnothing(findfirst(!isspace, val)) ? "." : val
+# String values written to mmCIF files: empty values are written as ".", and values that 
+# contain whitespace, start with a character reserved in CIF (# _ $ ' " ; [ ]), or are 
+# literally "." or "?" are quoted, with a quote character that the value does not contain. 
+# If it contains both, the CIF 1.1 rule is used: a quote only closes the value if followed 
+# by whitespace. Values with both ' and " followed by whitespace cannot be written.
+_cif_value(val) = val
+function _cif_value(val::AbstractString)
+    isnothing(findfirst(!isspace, val)) && return "."
+    _cif_needs_quotes(val) || return val
+    !occursin('\'', val) && return "'" * val * "'"
+    !occursin('"', val) && return "\"" * val * "\""
+    !_cif_closes_quote(val, '\'') && return "'" * val * "'"
+    !_cif_closes_quote(val, '"') && return "\"" * val * "\""
+    throw(ArgumentError("Value $val contains both ' and \" followed by whitespace, and cannot be written in mmCIF format."))
+end
+function _cif_needs_quotes(val::AbstractString)
+    first(val) in ('#', '_', '\$', '\'', '"', ';', '[', ']') && return true
+    val in (".", "?") && return true
+    return any(isspace, val)
+end
+function _cif_closes_quote(val::AbstractString, q::Char)
+    prev = ' '
+    for c in val
+        prev == q && isspace(c) && return true
+        prev = c
+    end
+    return false
+end
 
 # Formatting of the values written in the _atom_site loop. The kind (:int, :float or :string)
 # is defined by the type of the field in the table of mmCIF fields.
@@ -104,7 +130,7 @@ end
     ex = :(throw(ArgumentError(":$field_name not found for printing mmcif field in atom")))
     for f in reverse(fieldnames(atom))
         f == :custom && continue
-        ex = :(field_name === $(QuoteNode(f)) ? _fmt(kind, _dot_for_empty(getfield(atom, $(QuoteNode(f))))) : $ex)
+        ex = :(field_name === $(QuoteNode(f)) ? _fmt(kind, _cif_value(getfield(atom, $(QuoteNode(f))))) : $ex)
     end
     return ex
 end
@@ -190,7 +216,7 @@ function write_mmcif(
         println(file, "_struct_asym.id")
         println(file, "_struct_asym.entity_id")
         for (ch, eid) in chain_entity
-            println(file, "$ch $eid")
+            println(file, _cif_value(ch), " ", eid)
         end
         println(file, "#")
         # _pdbx_poly_seq_scheme (only for protein/polymer chains)
@@ -203,7 +229,8 @@ function write_mmcif(
             println(file, "_pdbx_poly_seq_scheme.pdb_seq_num")
             println(file, "_pdbx_poly_seq_scheme.pdb_ins_code")
             for (ch, rnum) in poly_residues
-                println(file, "$ch $rnum $ch $rnum ?")
+                cif_ch = _cif_value(ch)
+                println(file, cif_ch, " ", rnum, " ", cif_ch, " ", rnum, " ?")
             end
             println(file, "#")
         end
@@ -350,4 +377,56 @@ end
     write_mmcif(tmpfile, s.atoms)
     s2 = read_mmcif(tmpfile)
     @test isnothing(s2.title) && isnothing(s2.connectivity)
+end
+
+# Regression tests for https://github.com/m3g/PDBToolsBase.jl/issues/13
+@testitem "write_mmcif - quoted values" setup = [PublicNames] begin
+    using PDBToolsBase
+    using PDBToolsBase: _cif_value
+    @test _cif_value("CA") == "CA"
+    @test _cif_value("O5'") == "O5'"
+    @test _cif_value("") == "."
+    @test _cif_value("  ") == "."
+    @test _cif_value("1 NAD") == "'1 NAD'"
+    @test _cif_value("#") == "'#'"
+    @test _cif_value("A#") == "A#"
+    for c in ('#', '_', '\$', '\'', '"', ';', '[', ']')
+        @test first(_cif_value("$(c)X")) in ('\'', '"')
+    end
+    @test _cif_value(".") == "'.'"
+    @test _cif_value("?") == "'?'"
+    @test _cif_value("it's a") == "\"it's a\""
+    @test _cif_value("'A") == "\"'A\""
+    @test _cif_value("a\"b c") == "'a\"b c'"
+    @test _cif_value("it's \"a\" b") == "'it's \"a\" b'"
+    @test _cif_value("it' \"a\"b") == "\"it' \"a\"b\""
+    @test_throws ArgumentError _cif_value("it' \"a\" b")
+    @test _cif_value(1) == 1
+    # values with spaces, and chains starting with # (Packmol), are read back
+    tmpfile = tempname() * ".cif"
+    ats = [
+        Atom(; index=1, index_pdb=1, name="C1", resname="1 NAD", chain="A", resnum=1, x=1.0, y=2.0, z=3.0),
+        Atom(; index=2, index_pdb=2, name="C2", resname="2 NAD", chain="#", resnum=2, x=4.0, y=5.0, z=6.0),
+        Atom(; index=3, index_pdb=3, name="O5'", resname="ALA", chain="#", resnum=3, x=7.0, y=8.0, z=9.0),
+    ]
+    write_mmcif(tmpfile, ats)
+    s = read_mmcif(tmpfile)
+    @test length(s) == 3
+    @test resname.(s) == ["1 NAD", "2 NAD", "ALA"]
+    @test chain.(s) == ["A", "#", "#"]
+    # values with both quote characters
+    ats[1].resname = "a'b \"c"
+    write_mmcif(tmpfile, ats)
+    @test resname(read_mmcif(tmpfile)[1]) == "a'b \"c"
+    ats[1].resname = "1 NAD"
+    @test name.(s) == ["C1", "C2", "O5'"]
+    @test [position(at) for at in s] ≈ [position(at) for at in ats]
+    # no data line of any table starts with an unquoted # (a comment), except the separators
+    lines = readlines(tmpfile)
+    @test all(l -> l == "#" || !startswith(l, '#'), lines)
+    @test "'#' 2" in lines # _struct_asym
+    @test !any(l -> occursin(" # ", l), lines)
+    # bonds are read with quoted values in the file
+    write_mmcif(tmpfile, Structure(ats; connectivity=[[2], [1, 3], [2]]))
+    @test read_mmcif(tmpfile).connectivity == [[2], [1, 3], [2]]
 end
