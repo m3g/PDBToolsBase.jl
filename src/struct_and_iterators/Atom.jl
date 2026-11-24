@@ -549,7 +549,7 @@ get_atoms(atoms::AbstractVector{<:Atom}) = atoms
     @test residue(atom) == 2
     @test all((atom.x, atom.y, atom.z) .≈ (-6.351, -14.461, -5.695))
     @test occup(atom) == 1.0
-    @test beta(atom) == 0.0
+    @test beta(atom) == 23.04f0
     @test model(atom) == 1
     @test segname(atom) == "PROT"
     @test index_pdb(atom) == 13
@@ -728,11 +728,11 @@ julia> atoms = read_pdb(PDBTools.test_file("structure.pdb"), "protein and residu
 
 julia> printatom(atoms[1])
    index name resname chain   resnum  residue        x        y        z occup  beta model segname index_pdb
-      13    N     CYS     A        2        2   -6.351  -14.461   -5.695  1.00  0.00     1    PROT        13
+      13    N     CYS     A        2        2   -6.351  -14.461   -5.695  1.00 23.04     1    PROT        13
 
 julia> atoms[1] # default show method
    index name resname chain   resnum  residue        x        y        z occup  beta model segname index_pdb
-      13    N     CYS     A        2        2   -6.351  -14.461   -5.695  1.00  0.00     1    PROT        13
+      13    N     CYS     A        2        2   -6.351  -14.461   -5.695  1.00 23.04     1    PROT        13
 ```
 
 """

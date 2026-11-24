@@ -40,8 +40,8 @@ julia> ALA = read_pdb(PDBTools.test_file("structure.pdb"),"resname ALA")
        1    N     ALA     A        1        1   -9.229  -14.861   -5.481  0.00  0.00     1    PROT         1
        2  HT1     ALA     A        1        1  -10.048  -15.427   -5.569  0.00  0.00     1    PROT         2
 ⋮
-    1339    C     ALA     A       95       95   14.815   -3.057   -5.633  1.00  0.00     1    PROT      1339
-    1340    O     ALA     A       95       95   14.862   -2.204   -6.518  1.00  0.00     1    PROT      1340
+    1339    C     ALA     A       95       95   14.815   -3.057   -5.633  1.00 22.52     1    PROT      1339
+    1340    O     ALA     A       95       95   14.862   -2.204   -6.518  1.00 22.74     1    PROT      1340
 
 julia> ALA = read_pdb(PDBTools.test_file("structure.pdb"), atom -> atom.resname == "ALA")
    Structure{Atom{Nothing}} with 72 atoms
@@ -49,8 +49,8 @@ julia> ALA = read_pdb(PDBTools.test_file("structure.pdb"), atom -> atom.resname 
        1    N     ALA     A        1        1   -9.229  -14.861   -5.481  0.00  0.00     1    PROT         1
        2  HT1     ALA     A        1        1  -10.048  -15.427   -5.569  0.00  0.00     1    PROT         2
 ⋮
-    1339    C     ALA     A       95       95   14.815   -3.057   -5.633  1.00  0.00     1    PROT      1339
-    1340    O     ALA     A       95       95   14.862   -2.204   -6.518  1.00  0.00     1    PROT      1340
+    1339    C     ALA     A       95       95   14.815   -3.057   -5.633  1.00 22.52     1    PROT      1339
+    1340    O     ALA     A       95       95   14.862   -2.204   -6.518  1.00 22.74     1    PROT      1340
 ```
 
 """

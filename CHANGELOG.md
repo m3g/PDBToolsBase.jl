@@ -12,6 +12,7 @@ PDBToolsBase.jl Changelog
 
 Version 1.1.3-DEV
 -------------
+- ![INFO][badge-info] Update test to use the pdb file that contains non-zero beta values. 
 
 Version 1.1.2
 -------------
