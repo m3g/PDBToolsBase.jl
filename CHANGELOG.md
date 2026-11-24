@@ -10,6 +10,9 @@ PDBToolsBase.jl Changelog
 [badge-fix]: https://img.shields.io/badge/Fix-purple.svg
 [badge-info]: https://img.shields.io/badge/Info-gray.svg
 
+Version 1.1.4-DEV
+-------------
+
 Version 1.1.3
 -------------
 - ![INFO][badge-info] Update test to use the pdb file that contains non-zero beta values. 
